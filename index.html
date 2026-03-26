@@ -14,7 +14,7 @@
   :root {
     --bg:#050c12; --surface:#0b1822; --surface2:#0f2030;
     --border:rgba(80,180,160,0.15); --accent:#3fe8c0; --accent3:#e87b6a;
-    --text:#d6eee8; --muted:rgba(214,238,232,0.45);
+    --text:#d6eee8; --muted:rgba(214,238,232,0.6);
     --glow:rgba(63,232,192,0.25);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -30,6 +30,7 @@
   .logo span{color:var(--text);}
   .badge{font-family:'DM Mono',monospace;font-size:0.65rem;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;letter-spacing:0.08em;}
 
+  /* SETUP */
   #setupScreen{padding:10px 24px 0;flex:1;display:flex;flex-direction:column;gap:18px;}
   .section-label{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;}
   .preset-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
@@ -38,20 +39,21 @@
   .preset-btn .ratio{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--accent);}
   .preset-btn .name{font-size:0.58rem;color:var(--muted);font-family:'DM Mono',monospace;}
 
+  /* SPIN WHEEL */
   .wheel-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 20px;}
   .wheel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
   .wheel-header .section-label{margin-bottom:0;}
   .wheel-readout{font-family:'DM Mono',monospace;font-size:1.05rem;color:var(--accent);}
   .spin-outer{position:relative;height:154px;border-radius:14px;background:var(--surface2);overflow:hidden;display:flex;}
-  .spin-outer::before,.spin-outer::after{content:'';position:absolute;left:0;right:0;height:46px;z-index:3;pointer-events:none;}
-  .spin-outer::before{top:0;background:linear-gradient(to bottom,var(--surface2) 10%,transparent);}
-  .spin-outer::after{bottom:0;background:linear-gradient(to top,var(--surface2) 10%,transparent);}
+  .spin-outer::before,.spin-outer::after{content:'';position:absolute;left:0;right:0;height:50px;z-index:3;pointer-events:none;}
+  .spin-outer::before{top:0;background:linear-gradient(to bottom,var(--surface2) 20%,transparent);}
+  .spin-outer::after{bottom:0;background:linear-gradient(to top,var(--surface2) 20%,transparent);}
   .spin-sel{position:absolute;left:6px;right:6px;top:50%;transform:translateY(-50%);height:44px;border-radius:10px;background:rgba(63,232,192,0.09);border:1px solid rgba(63,232,192,0.24);pointer-events:none;z-index:2;}
   .spin-col{flex:1;overflow:hidden;position:relative;cursor:grab;touch-action:none;user-select:none;}
   .spin-col:active{cursor:grabbing;}
   .spin-sep{flex-shrink:0;width:16px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.2rem;color:var(--muted);z-index:4;}
-  .spin-inner{position:absolute;left:0;right:0;will-change:transform;}
-  .spin-item{height:44px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.18rem;color:var(--muted);flex-shrink:0;}
+  .spin-inner{position:absolute;left:0;right:0;}
+  .spin-item{height:44px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.18rem;color:var(--muted);flex-shrink:0;transition:color 0.1s,font-size 0.1s;}
   .spin-item.sel{color:var(--text);font-size:1.32rem;font-weight:500;}
   .spin-col-ap .spin-item{font-size:0.88rem;letter-spacing:0.07em;}
   .spin-col-ap .spin-item.sel{font-size:0.98rem;}
@@ -64,8 +66,8 @@
   .start-btn{background:var(--accent);color:#050c12;border:none;border-radius:18px;padding:18px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;cursor:pointer;width:100%;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 0 30px var(--glow);}
   .start-btn:active{transform:scale(0.97);}
 
+  /* TIMER */
   #timerScreen{display:none;flex-direction:column;align-items:center;padding:0 20px;flex:1;}
-
   .ring-outer{position:relative;width:300px;height:300px;margin:8px auto 6px;flex-shrink:0;}
   .ring-outer svg{position:absolute;inset:0;width:100%;height:100%;}
   .stage-marker{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--surface2);border:2px solid rgba(63,232,192,0.2);transition:background 0.4s,border-color 0.4s,box-shadow 0.4s;transform:translate(-50%,-50%);z-index:5;}
@@ -77,11 +79,24 @@
   .ring-sub{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;}
   .ring-elapsed{font-size:0.75rem;color:var(--muted);font-family:'DM Mono',monospace;}
 
+  /* START/END row with edit buttons */
   .se-row{display:grid;grid-template-columns:1fr 1px 1fr;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;}
-  .se-cell{padding:12px 16px;}
+  .se-cell{padding:12px 16px;position:relative;}
   .se-divider{background:var(--border);}
-  .se-lbl{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+  .se-lbl{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+  .se-edit{background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.75rem;padding:0;opacity:0.7;}
+  .se-edit:active{opacity:1;}
   .se-val{font-family:'DM Mono',monospace;font-size:0.95rem;color:var(--text);}
+
+  /* EDIT MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(5,12,18,0.85);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-sheet{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:24px 24px 48px;}
+  .modal-title{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--text);margin-bottom:16px;text-align:center;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-btn{flex:1;border-radius:14px;padding:14px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:0.9rem;cursor:pointer;transition:all 0.2s;}
+  .modal-btn.confirm{background:var(--accent);color:#050c12;border-color:var(--accent);}
+  .modal-btn.cancel{background:var(--surface2);color:var(--muted);}
 
   .current-stage{background:var(--surface);border:1px solid var(--accent);border-radius:18px;padding:14px 16px;width:100%;margin-bottom:12px;}
   .stage-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
@@ -95,7 +110,7 @@
   .stage-item{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;display:flex;align-items:flex-start;gap:11px;transition:all 0.3s;}
   .stage-item.active{border-color:var(--accent);background:rgba(63,232,192,0.07);}
   .stage-item.done{border-color:rgba(63,232,192,0.3);opacity:0.65;}
-  .stage-item.upcoming{opacity:0.72;}
+  .stage-item.upcoming{opacity:0.82;}
   .s-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px var(--accent);}
   .s-dot.done{background:rgba(63,232,192,0.4);box-shadow:none;}
   .s-dot.upcoming{background:var(--surface2);border:1px solid var(--border);box-shadow:none;}
@@ -134,11 +149,12 @@
   <div class="header">
     <div class="logo">Fast<span>Sync</span></div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <div class="badge" id="streakBadge" style="cursor:default;">🔥 0 days</div>
+      <div class="badge" id="streakBadge">🔥 0 days</div>
       <div class="badge" id="protocolBadge">16:8</div>
     </div>
   </div>
 
+  <!-- SETUP -->
   <div id="setupScreen">
     <div>
       <div class="section-label">Fast Protocol</div>
@@ -155,7 +171,7 @@
         <div class="section-label">Fast Starts At</div>
         <div class="wheel-readout" id="wheelReadout">8:00 PM</div>
       </div>
-      <div class="spin-outer">
+      <div class="spin-outer" id="setupWheel">
         <div class="spin-sel"></div>
         <div class="spin-col" id="colH"></div>
         <div class="spin-sep">:</div>
@@ -176,6 +192,7 @@
     </div>
   </div>
 
+  <!-- TIMER -->
   <div id="timerScreen">
     <div class="ring-outer" id="ringOuter">
       <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
@@ -199,12 +216,21 @@
         <div class="ring-elapsed" id="ringElapsed">Fasting for 0m</div>
       </div>
     </div>
+
+    <!-- Start / End row with edit pencils -->
     <div class="se-row">
-      <div class="se-cell"><div class="se-lbl">START FAST</div><div class="se-val" id="startedAt">—</div></div>
+      <div class="se-cell">
+        <div class="se-lbl">START FAST <button class="se-edit" onclick="openEditModal('start')">✏️</button></div>
+        <div class="se-val" id="startedAt">—</div>
+      </div>
       <div class="se-divider"></div>
-      <div class="se-cell"><div class="se-lbl">END FAST</div><div class="se-val" id="endsAt">—</div></div>
+      <div class="se-cell">
+        <div class="se-lbl">END FAST <button class="se-edit" onclick="openEditModal('end')">✏️</button></div>
+        <div class="se-val" id="endsAt">—</div>
+      </div>
     </div>
-    <div class="current-stage" id="currentStageCard">
+
+    <div class="current-stage">
       <div class="stage-header">
         <span class="stage-icon-lg" id="csIcon">⏳</span>
         <span class="stage-name" id="csName">Starting…</span>
@@ -222,6 +248,7 @@
     </div>
   </div>
 
+  <!-- COMPLETE -->
   <div id="completeScreen">
     <div class="complete-icon">🏆</div>
     <div class="complete-title">Fast Complete!</div>
@@ -231,388 +258,464 @@
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeEditModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-title" id="editModalTitle">Edit Start Time</div>
+    <div class="spin-outer" id="editWheel">
+      <div class="spin-sel"></div>
+      <div class="spin-col" id="eColH"></div>
+      <div class="spin-sep">:</div>
+      <div class="spin-col" id="eColM"></div>
+      <div class="spin-sep">&nbsp;</div>
+      <div class="spin-col spin-col-ap" id="eColAP"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="applyEdit()">Update</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ─── STAGES (lipolysis is now a full first-class stage) ───────────────────
+// ─── STAGES ───────────────────────────────────────────────────────────────
 const STAGES = [
   {
-    startH: 0, endH: 4, icon: '🍽️', name: 'Fed State', badge: 'Digesting',
-    desc: 'Your body is actively digesting your last meal. Blood glucose rises and your pancreas releases insulin to shuttle that glucose into cells for energy. Every cell is running on food fuel right now. Insulin also signals your fat cells to store energy, not release it — so zero fat burning is happening. This phase lasts roughly 0–4 hours depending on how large or carb-heavy your meal was.'
+    startH:0, endH:4, icon:'🍽️', name:'Fed State', badge:'Digesting',
+    desc:'Blood glucose and insulin are high — your body is running entirely on food energy. Insulin blocks fat release, so no fat is being burned yet. Lasts 0–4 hours depending on meal size.',
+    full:'Your body is actively digesting your last meal. Blood glucose rises and your pancreas releases insulin to shuttle that glucose into cells for energy. Insulin also signals fat cells to store energy rather than release it, so zero fat burning is happening. This phase lasts roughly 0–4 hours depending on how large or carb-heavy your meal was.'
   },
   {
-    startH: 4, endH: 8, icon: '📉', name: 'Early Fasting', badge: 'Insulin Dropping',
-    desc: 'Digestion is complete and your blood glucose is falling. Insulin drops and its opposite hormone, glucagon, rises. Glucagon signals the liver to start breaking down its glycogen reserves — the stored form of glucose — and releasing it as sugar to keep your brain and body fuelled. Your fat cells are starting to release fatty acids into the bloodstream, but glycogen is still the dominant fuel. Your body is coasting on its reserves.'
+    startH:4, endH:8, icon:'📉', name:'Early Fasting', badge:'Insulin Dropping',
+    desc:'Digestion is done and insulin is falling. Glucagon rises, signalling your liver to break down glycogen stores for glucose. Fat cells are beginning to release fatty acids, but carbs are still the main fuel.',
+    full:'Digestion is complete and blood glucose is falling. Insulin drops and glucagon rises, signalling the liver to break down its glycogen reserves and release glucose to keep your brain fuelled. Your fat cells are starting to release fatty acids, but glycogen is still the dominant fuel. Your body is coasting on its reserves.'
   },
   {
-    startH: 8, endH: 12, icon: '💧', name: 'Lipolysis', badge: 'Fat Mobilising',
-    desc: 'Liver glycogen is roughly 50% depleted. Insulin is now low enough that your fat cells are getting a clear signal to open up. Lipolysis — the breakdown of stored fat (triglycerides) into glycerol and free fatty acids — is accelerating meaningfully. Those fatty acids are now circulating in your blood as an energy source. Your muscles are increasingly burning fat directly. This is the gateway to ketosis: no lipolysis means no ketones, and right now it is ramping up fast.'
+    startH:8, endH:12, icon:'💧', name:'Lipolysis', badge:'Fat Mobilising',
+    desc:'Liver glycogen is ~50% gone. Insulin is low enough that fat cells are actively opening up — breaking stored fat (triglycerides) into free fatty acids that now circulate in your blood. This is the essential gateway to ketosis.',
+    full:'Liver glycogen is roughly 50% depleted and insulin is now low enough that fat cells are getting a clear signal to open up. Lipolysis — the breakdown of stored fat (triglycerides) into glycerol and free fatty acids — is accelerating meaningfully. Those fatty acids circulate in your blood as fuel and your muscles are increasingly burning fat directly. This is the essential gateway to ketosis: no lipolysis means no ketones.'
   },
   {
-    startH: 12, endH: 14, icon: '🔄', name: 'Metabolic Switch', badge: 'Mild Ketosis',
-    desc: 'Liver glycogen is nearly exhausted. Your body is crossing the metabolic crossover point — the moment it shifts from carbohydrates to fat as its primary fuel. Peer-reviewed research confirms that blood ketone levels (specifically beta-hydroxybutyrate, or BHB) begin rising measurably at 12–14 hours. The liver is now actively converting fatty acids into ketone bodies. If you ate low-carb before fasting, you may have crossed this point earlier. Mild hunger and mental fogginess here are normal — they pass.'
+    startH:12, endH:14, icon:'🔄', name:'Metabolic Switch', badge:'Mild Ketosis',
+    desc:'Liver glycogen is nearly exhausted. Blood ketone levels (BHB) begin rising measurably at 12–14 hours — confirmed by peer-reviewed research. Your body is crossing from carb-burning to fat-burning.',
+    full:'Liver glycogen is nearly exhausted and your body is crossing the metabolic crossover point — shifting from carbohydrates to fat as its primary fuel. Peer-reviewed research confirms blood ketone levels (specifically beta-hydroxybutyrate, BHB) begin rising at 12–14 hours. The liver is now actively converting fatty acids into ketone bodies. Mild hunger and mental fogginess here are normal and temporary.'
   },
   {
-    startH: 14, endH: 17, icon: '🔥', name: 'Ketosis Building', badge: 'Fat Burning',
-    desc: 'Fat is now your primary fuel. Ketone production is accelerating as the liver ramps up conversion of fatty acids into BHB and other ketones. Your muscles, heart, and increasingly your brain are running on ketones. By 16–17 hours of daily fasting, human studies have confirmed measurable upregulation of autophagy genes (ATG5, ULK1, BECN1) — your cells are beginning to prepare their internal recycling machinery. Growth hormone is rising to actively protect your muscle mass from being broken down for energy.'
+    startH:14, endH:17, icon:'🔥', name:'Ketosis Building', badge:'Fat Burning',
+    desc:'Fat is your primary fuel. Ketones are accelerating and growth hormone is rising to protect muscle. By 16–17h, autophagy genes (ATG5, ULK1, BECN1) are measurably upregulating per human studies.',
+    full:'Fat is now your primary fuel. The liver is ramping up conversion of fatty acids into ketones — BHB and acetoacetate are powering your muscles, heart, and brain. By 16–17 hours of daily fasting, human studies confirm measurable upregulation of autophagy genes (ATG5, ULK1, BECN1), meaning cells are preparing their internal recycling machinery. Growth hormone is rising to actively protect muscle mass.'
   },
   {
-    startH: 17, endH: 24, icon: '⚡', name: 'Full Ketosis', badge: 'Peak Fat Burn',
-    desc: 'You have reached full nutritional ketosis (BHB ≥ 0.5 mmol/L). Ketones are your dominant fuel source and fat breakdown is at its peak. Insulin is at its lowest point of the entire day, which means fat cells are maximally open. A useful side effect: ketones suppress ghrelin, the hormone that makes you feel hungry — which is why hunger often paradoxically decreases the longer you fast. Growth hormone is significantly elevated, preserving lean muscle. Autophagy pathways continue to build.'
+    startH:17, endH:24, icon:'⚡', name:'Full Ketosis', badge:'Peak Fat Burn',
+    desc:'Full nutritional ketosis (BHB ≥ 0.5 mmol/L). Ketones are your dominant fuel, insulin is at its lowest, and fat breakdown is at its peak. Hunger drops because ketones suppress ghrelin — the hunger hormone.',
+    full:'Full nutritional ketosis is achieved (BHB ≥ 0.5 mmol/L). Ketones are your dominant fuel, insulin is at its lowest point, and fat breakdown is maximal. A useful side effect: ketones suppress ghrelin, the hormone that makes you feel hungry — which is why hunger paradoxically decreases the longer you fast. Growth hormone is significantly elevated, preserving lean muscle. Autophagy pathways continue to build.'
   },
   {
-    startH: 24, endH: 48, icon: '🧬', name: 'Autophagy Activating', badge: 'Cellular Cleanup',
-    desc: 'With glucose and insulin at their lowest sustained levels, autophagy — your cells\' internal recycling process — is now meaningfully active. Autophagy literally means "self-eating": cells identify and break down damaged proteins, dysfunctional organelles, and cellular debris, then repurpose those components as fuel or building material. Studies have detected autophagy markers in human immune cells around 24 hours. The result is reduced inflammation, better cellular efficiency, and activation of longevity pathways. Note: individual timing varies — some researchers place robust human autophagy at 2–4 days.'
+    startH:24, endH:48, icon:'🧬', name:'Autophagy Activating', badge:'Cellular Cleanup',
+    desc:'With glucose and insulin at sustained lows, autophagy is now meaningfully active. Cells identify and break down damaged proteins and organelles, reduce inflammation, and activate longevity pathways.',
+    full:'With glucose and insulin at their lowest sustained levels, autophagy — your cells\' internal recycling process — is now meaningfully active. Cells identify and break down damaged proteins, dysfunctional organelles, and cellular debris, then repurpose those components as fuel or building material. Studies detect autophagy markers in human immune cells around 24 hours. Inflammation decreases and longevity pathways activate. Individual timing varies — robust human autophagy may take 2–4 days.'
   },
   {
-    startH: 48, endH: 168, icon: '✨', name: 'Extended Fast', badge: 'Deep Renewal',
-    desc: 'Autophagy is at its most intensive level, peaking around 48–72 hours in animal studies. Stem cell production is stimulated, particularly in the gut. The immune system undergoes a partial reset as old immune cells are cleared and new ones are generated. Ketone levels are very high, providing powerful anti-inflammatory and neuroprotective effects. Important: fasts of this length carry real risks including electrolyte imbalance and muscle loss. This should only be undertaken with medical supervision and careful preparation.'
+    startH:48, endH:168, icon:'✨', name:'Extended Fast', badge:'Deep Renewal',
+    desc:'Autophagy is at its most intensive, peaking around 48–72h in animal studies. Stem cell activity increases and the immune system begins to partially reset. Medical supervision is advised for fasts this long.',
+    full:'Autophagy is at its most intensive level, peaking around 48–72 hours in animal studies. Stem cell production is stimulated, particularly in the gut, and the immune system undergoes a partial reset as old immune cells are cleared and new ones generated. Ketone levels are very high with powerful anti-inflammatory effects. Important: fasts of this length carry real risks including electrolyte imbalance and muscle loss — medical supervision is strongly advised.'
   }
 ];
 
-// ─── RING GEOMETRY (300×300 SVG, r=126) ──────────────────────────────────
-const CX = 150, CY = 150, R = 126, CIRC = 2 * Math.PI * R; // 791.7
+// ─── RING ─────────────────────────────────────────────────────────────────
+const CX=150, CY=150, R=126, CIRC=2*Math.PI*R;
+function hToAngle(h,total){return(h/total)*360;}
+function angleToXY(deg){const rad=(deg-90)*Math.PI/180;return{x:CX+R*Math.cos(rad),y:CY+R*Math.sin(rad)};}
 
-function hToAngle(h, total) { return (h / total) * 360; }
-function angleToXY(deg) {
-  const rad = (deg - 90) * Math.PI / 180;
-  return { x: CX + R * Math.cos(rad), y: CY + R * Math.sin(rad) };
-}
+let fastDurationHours=16, markerEls=[];
+let startTime=null, timerInterval=null;
+let isPaused=false, pausedAt=null, totalPausedMs=0;
+let lastStageId=null, lastTimelineStageId=null;
 
-// ─── STATE ────────────────────────────────────────────────────────────────
-let fastDurationHours = 16;
-let markerEls = [];
-let startTime = null, timerInterval = null;
-let isPaused = false, pausedAt = null, totalPausedMs = 0;
-let lastStageId = null, lastTimelineStageId = null;
-
-// ─── RING MARKERS ─────────────────────────────────────────────────────────
-function buildRingMarkers() {
-  const container = document.getElementById('ringMarkers');
-  container.innerHTML = '';
-  markerEls = [];
-
-  STAGES.forEach(s => {
-    if (s.startH === 0) return;
-    if (s.startH > fastDurationHours + 0.5) return;
-    const pos = angleToXY(hToAngle(s.startH, fastDurationHours));
-    const el = document.createElement('div');
-    el.className = 'stage-marker';
-    el.textContent = s.icon;
-    el.style.left = (pos.x / 300 * 100) + '%';
-    el.style.top  = (pos.y / 300 * 100) + '%';
-    el.title = s.name;
-    container.appendChild(el);
-    markerEls.push({ el, stageId: s.startH + s.name });
+function buildRingMarkers(){
+  const c=document.getElementById('ringMarkers');
+  c.innerHTML=''; markerEls=[];
+  STAGES.forEach(s=>{
+    if(s.startH===0||s.startH>fastDurationHours+0.5)return;
+    const pos=angleToXY(hToAngle(s.startH,fastDurationHours));
+    const el=document.createElement('div');
+    el.className='stage-marker'; el.textContent=s.icon;
+    el.style.left=(pos.x/300*100)+'%'; el.style.top=(pos.y/300*100)+'%';
+    el.title=s.name; c.appendChild(el);
+    markerEls.push({el,stage:s});
   });
-
-  // Goal marker at 12 o'clock
-  const g = document.createElement('div');
-  g.className = 'stage-marker';
-  g.textContent = '🎯';
-  g.style.left = '50%';
-  g.style.top  = '0%';
-  g.style.transform = 'translate(-50%, -50%)';
-  g.id = 'goalMarker';
-  container.appendChild(g);
+  const g=document.createElement('div');
+  g.className='stage-marker'; g.textContent='🎯';
+  g.style.left='50%'; g.style.top='0%';
+  g.style.transform='translate(-50%,-50%)';
+  g.id='goalMarker'; c.appendChild(g);
 }
 
-function updateMarkers(elapsedH) {
-  STAGES.forEach((s, i) => {
-    if (s.startH === 0 || s.startH > fastDurationHours + 0.5) return;
-    const me = markerEls[i - 1]; // markerEls skips startH=0 stage
-    if (!me) return;
-    const reached  = elapsedH >= s.startH;
-    const isCurrent = elapsedH >= s.startH && elapsedH < s.endH;
-    me.el.classList.toggle('reached', reached && !isCurrent);
-    me.el.classList.toggle('current', isCurrent);
+function updateMarkers(eh){
+  markerEls.forEach(({el,stage})=>{
+    const r=eh>=stage.startH, cur=eh>=stage.startH&&eh<stage.endH;
+    el.classList.toggle('reached',r&&!cur);
+    el.classList.toggle('current',cur);
   });
-  const g = document.getElementById('goalMarker');
-  if (g) g.classList.toggle('reached', elapsedH >= fastDurationHours);
+  const g=document.getElementById('goalMarker');
+  if(g)g.classList.toggle('reached',eh>=fastDurationHours);
 }
 
-// ─── SPIN WHEEL ───────────────────────────────────────────────────────────
-const IH = 44, COL_H = 154;
-function buildWheel(colEl, items, initIdx, onChange) {
-  const PAD = Math.ceil(COL_H / 2 / IH);
-  const inner = document.createElement('div');
-  inner.className = 'spin-inner';
-  colEl.appendChild(inner);
-  let idx = Math.max(0, Math.min(items.length - 1, initIdx));
+// ─── SMOOTH SPIN WHEEL ────────────────────────────────────────────────────
+const IH=44, COL_H=154;
 
-  function iT(i) { return (COL_H / 2 - IH / 2) - (PAD + i) * IH; }
-  function render(ci) {
-    inner.innerHTML = '';
-    for (let r = -PAD; r < items.length + PAD; r++) {
-      const d = document.createElement('div');
-      d.className = 'spin-item' + (r === ci ? ' sel' : '');
-      d.textContent = (r >= 0 && r < items.length) ? items[r] : '';
+function buildWheel(colEl, items, initIdx, onChange){
+  const PAD=Math.ceil(COL_H/2/IH)+1;
+  const inner=document.createElement('div');
+  inner.className='spin-inner'; colEl.appendChild(inner);
+  let idx=Math.max(0,Math.min(items.length-1,initIdx));
+
+  function iT(i){return(COL_H/2-IH/2)-(PAD+i)*IH;}
+  function render(ci){
+    inner.innerHTML='';
+    for(let r=-PAD;r<items.length+PAD;r++){
+      const d=document.createElement('div');
+      d.className='spin-item'+(r===ci?' sel':'');
+      d.textContent=(r>=0&&r<items.length)?items[r]:'';
       inner.appendChild(d);
     }
   }
-  function snap(i) {
-    i = Math.max(0, Math.min(items.length - 1, i));
-    idx = i;
-    inner.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-    inner.style.transform = `translateY(${iT(i)}px)`;
+  function snap(i,animated){
+    i=Math.max(0,Math.min(items.length-1,i));
+    if(animated!==false)inner.style.transition='transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)';
+    else inner.style.transition='none';
+    idx=i;
+    inner.style.transform=`translateY(${iT(i)}px)`;
     render(i); onChange(i);
   }
-  function cT() { return new DOMMatrix(getComputedStyle(inner).transform).m42; }
-  function tI(t) { return Math.round(((COL_H / 2 - IH / 2) - t) / IH - PAD); }
+  function cT(){return new DOMMatrix(getComputedStyle(inner).transform).m42;}
+  function tI(t){return Math.round(((COL_H/2-IH/2)-t)/IH-PAD);}
 
-  inner.style.transform = `translateY(${iT(idx)}px)`; render(idx);
-  let sy = 0, bt = 0, drag = false, vy = 0, ly = 0, lt = 0, raf = null;
-  const gy = e => e.touches ? e.touches[0].clientY : e.clientY;
+  snap(idx,false);
 
-  colEl.addEventListener('touchstart', e => { cancelAnimationFrame(raf); inner.style.transition = 'none'; drag = true; sy = gy(e); bt = cT(); vy = 0; ly = sy; lt = Date.now(); e.preventDefault(); }, { passive: false });
-  colEl.addEventListener('touchmove',  e => { if (!drag) return; const y = gy(e), now = Date.now(), dt = now - lt || 1; vy = (y - ly) / dt; ly = y; lt = now; inner.style.transform = `translateY(${bt + (y - sy)}px)`; e.preventDefault(); }, { passive: false });
-  colEl.addEventListener('touchend',   () => { if (!drag) return; drag = false; let v = vy * 60, c = cT(); function coast() { v *= 0.86; c += v; inner.style.transform = `translateY(${c}px)`; if (Math.abs(v) > 0.4) raf = requestAnimationFrame(coast); else snap(tI(c)); } coast(); });
-  colEl.addEventListener('mousedown',  e => { cancelAnimationFrame(raf); inner.style.transition = 'none'; drag = true; sy = e.clientY; bt = cT(); vy = 0; ly = sy; lt = Date.now(); });
-  window.addEventListener('mousemove', e => { if (!drag) return; const now = Date.now(), dt = now - lt || 1; vy = (e.clientY - ly) / dt; ly = e.clientY; lt = now; inner.style.transform = `translateY(${bt + (e.clientY - sy)}px)`; });
-  window.addEventListener('mouseup',   () => { if (!drag) return; drag = false; let v = vy * 60, c = cT(); function coast() { v *= 0.86; c += v; inner.style.transform = `translateY(${c}px)`; if (Math.abs(v) > 0.4) raf = requestAnimationFrame(coast); else snap(tI(c)); } coast(); });
-  return { snap, getIdx: () => idx };
+  let startY=0, startT=0, baseT=0, drag=false;
+  let samples=[], rafId=null;
+  const gy=e=>e.touches?e.touches[0].clientY:e.clientY;
+
+  colEl.addEventListener('touchstart',e=>{
+    cancelAnimationFrame(rafId);
+    inner.style.transition='none';
+    drag=true; startY=gy(e); startT=Date.now();
+    baseT=cT(); samples=[];
+    e.preventDefault();
+  },{passive:false});
+
+  colEl.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    const y=gy(e);
+    const now=Date.now();
+    samples.push({y,t:now});
+    if(samples.length>6)samples.shift();
+    inner.style.transform=`translateY(${baseT+(y-startY)}px)`;
+    e.preventDefault();
+  },{passive:false});
+
+  colEl.addEventListener('touchend',()=>{
+    if(!drag)return; drag=false;
+    // Calculate velocity from last few samples for smooth momentum
+    let vel=0;
+    if(samples.length>=2){
+      const s0=samples[0], s1=samples[samples.length-1];
+      const dt=s1.t-s0.t;
+      if(dt>0)vel=(s1.y-s0.y)/dt; // px per ms
+    }
+    let pos=cT();
+    const friction=0.96; // higher = smoother coast
+    const minVel=0.15;
+    function coast(){
+      vel*=friction;
+      pos+=vel*16; // ~60fps frame
+      inner.style.transform=`translateY(${pos}px)`;
+      if(Math.abs(vel)>minVel){rafId=requestAnimationFrame(coast);}
+      else{snap(tI(pos));}
+    }
+    if(Math.abs(vel)>0.2){coast();}else{snap(tI(pos));}
+  });
+
+  // Mouse support
+  colEl.addEventListener('mousedown',e=>{
+    cancelAnimationFrame(rafId);
+    inner.style.transition='none';
+    drag=true; startY=e.clientY; startT=Date.now();
+    baseT=cT(); samples=[];
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!drag)return;
+    const now=Date.now();
+    samples.push({y:e.clientY,t:now});
+    if(samples.length>6)samples.shift();
+    inner.style.transform=`translateY(${baseT+(e.clientY-startY)}px)`;
+  });
+  window.addEventListener('mouseup',()=>{
+    if(!drag)return; drag=false;
+    let vel=0;
+    if(samples.length>=2){
+      const s0=samples[0],s1=samples[samples.length-1];
+      const dt=s1.t-s0.t;
+      if(dt>0)vel=(s1.y-s0.y)/dt;
+    }
+    let pos=cT();
+    const friction=0.96;
+    function coast(){
+      vel*=friction; pos+=vel*16;
+      inner.style.transform=`translateY(${pos}px)`;
+      if(Math.abs(vel)>0.15){rafId=requestAnimationFrame(coast);}else{snap(tI(pos));}
+    }
+    if(Math.abs(vel)>0.2){coast();}else{snap(tI(pos));}
+  });
+
+  return{snap,getIdx:()=>idx};
 }
 
-const hourItems = ['1','2','3','4','5','6','7','8','9','10','11','12'];
-const minItems  = Array.from({length:60}, (_,i) => String(i).padStart(2,'0'));
-const apItems   = ['AM','PM'];
-let selHr = 7, selMin = 0, selAP = 1;
+// Setup screen wheels
+const hourItems=['1','2','3','4','5','6','7','8','9','10','11','12'];
+const minItems=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
+const apItems=['AM','PM'];
+let selHr=7, selMin=0, selAP=1;
 
-function syncReadout() {
-  document.getElementById('wheelReadout').textContent = `${hourItems[selHr]}:${minItems[selMin]} ${apItems[selAP]}`;
+function syncReadout(){
+  document.getElementById('wheelReadout').textContent=`${hourItems[selHr]}:${minItems[selMin]} ${apItems[selAP]}`;
   updateEndDisplay();
 }
-buildWheel(document.getElementById('colH'),  hourItems, 7, i => { selHr  = i; syncReadout(); });
-buildWheel(document.getElementById('colM'),  minItems,  0, i => { selMin = i; syncReadout(); });
-buildWheel(document.getElementById('colAP'), apItems,   1, i => { selAP  = i; syncReadout(); });
+const wHr =buildWheel(document.getElementById('colH'), hourItems,7,i=>{selHr=i;syncReadout();});
+const wMin=buildWheel(document.getElementById('colM'), minItems, 0,i=>{selMin=i;syncReadout();});
+const wAP =buildWheel(document.getElementById('colAP'),apItems,  1,i=>{selAP=i;syncReadout();});
 
-function getTime24() {
-  let h = parseInt(hourItems[selHr]); const ap = apItems[selAP];
-  if (ap === 'PM' && h !== 12) h += 12;
-  if (ap === 'AM' && h === 12) h = 0;
-  return { h, m: parseInt(minItems[selMin]) };
+function getTime24(){
+  let h=parseInt(hourItems[selHr]); const ap=apItems[selAP];
+  if(ap==='PM'&&h!==12)h+=12; if(ap==='AM'&&h===12)h=0;
+  return{h,m:parseInt(minItems[selMin])};
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
-function fmt12(d) { let h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`; }
-function pad2(n)  { return String(n).padStart(2, '0'); }
-function fmtHMS(ms) { if (ms <= 0) return '00:00:00'; const s = Math.floor(ms / 1000); return `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor(s % 3600 / 60))}:${pad2(s % 60)}`; }
-function fmtElapsed(ms) { const m = Math.floor(ms / 60000), h = Math.floor(m / 60), rm = m % 60; return h > 0 ? `Fasting for ${h}h ${rm}m` : `Fasting for ${rm}m`; }
+// ─── EDIT MODAL WHEELS ────────────────────────────────────────────────────
+let eSelHr=7, eSelMin=0, eSelAP=1, editMode='start';
+let eWHr, eWMin, eWAP;
 
-function getStage(elapsedH) {
-  for (let i = STAGES.length - 1; i >= 0; i--)
-    if (elapsedH >= STAGES[i].startH) return STAGES[i];
-  return STAGES[0];
+eWHr =buildWheel(document.getElementById('eColH'), hourItems,7,i=>{eSelHr=i;});
+eWMin=buildWheel(document.getElementById('eColM'), minItems, 0,i=>{eSelMin=i;});
+eWAP =buildWheel(document.getElementById('eColAP'),apItems,  1,i=>{eSelAP=i;});
+
+function getEditTime24(){
+  let h=parseInt(hourItems[eSelHr]); const ap=apItems[eSelAP];
+  if(ap==='PM'&&h!==12)h+=12; if(ap==='AM'&&h===12)h=0;
+  return{h,m:parseInt(minItems[eSelMin])};
 }
 
-function stageLabel(s) {
-  if (s.startH >= fastDurationHours) return `h${s.startH}+`;
-  const end = s.endH <= fastDurationHours ? s.endH : fastDurationHours + '+';
-  return `h${s.startH}–${end}`;
+function openEditModal(mode){
+  editMode=mode;
+  const title=document.getElementById('editModalTitle');
+  // Pre-fill wheel with current value
+  const refTime=mode==='start'?startTime:startTime+fastDurationHours*3600000;
+  const d=new Date(refTime);
+  let h=d.getHours(), m=d.getMinutes();
+  const ap=h>=12?1:0;
+  const h12=h%12||12;
+  const hIdx=hourItems.indexOf(String(h12));
+  const mIdx=minItems.indexOf(String(m).padStart(2,'0'));
+  title.textContent=mode==='start'?'Edit Start Time':'Edit End Time';
+  eWHr.snap(hIdx>=0?hIdx:0);
+  eWMin.snap(mIdx>=0?mIdx:0);
+  eWAP.snap(ap);
+  document.getElementById('editModal').classList.add('open');
 }
 
-// ─── SETUP SCREEN ─────────────────────────────────────────────────────────
-function selectPreset(el, hours) {
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  fastDurationHours = hours;
-  document.getElementById('durationDisplay').textContent = hours + ' hours';
-  document.getElementById('protocolBadge').textContent = hours + ':' + (24 - hours);
-  updateEndDisplay();
-  buildPreviewStages();
-  try { localStorage.setItem('fastsync_preset', hours); } catch {}
+function closeEditModal(e){
+  if(e&&e.target!==document.getElementById('editModal'))return;
+  document.getElementById('editModal').classList.remove('open');
 }
 
-function updateEndDisplay() {
-  const { h, m } = getTime24();
-  const d = new Date(); d.setHours(h, m, 0, 0); d.setHours(d.getHours() + fastDurationHours);
-  document.getElementById('endTimeDisplay').textContent = fmt12(d);
+function applyEdit(){
+  const{h,m}=getEditTime24();
+  const newDate=new Date(); newDate.setHours(h,m,0,0);
+  // If it's in the future today, assume yesterday
+  if(newDate>Date.now())newDate.setDate(newDate.getDate()-1);
+
+  if(editMode==='start'){
+    // Moving start time — preserve fast duration, shift everything
+    startTime=newDate.getTime();
+  } else {
+    // Moving end time — recalculate duration based on new end
+    const newEnd=newDate.getTime();
+    // If end is before start (next day), add 24h
+    let diff=newEnd-startTime;
+    if(diff<=0)diff+=86400000;
+    fastDurationHours=diff/3600000;
+    // Update protocol badge
+    document.getElementById('protocolBadge').textContent=Math.round(fastDurationHours)+':'+(24-Math.round(fastDurationHours));
+  }
+
+  // Update display
+  document.getElementById('startedAt').textContent=fmt12(new Date(startTime));
+  document.getElementById('endsAt').textContent=fmt12(new Date(startTime+fastDurationHours*3600000));
+
+  // Rebuild ring markers since duration may have changed
+  buildRingMarkers();
+  // Force timeline rebuild
+  lastStageId=null; lastTimelineStageId=null;
+  tick();
+
+  document.getElementById('editModal').classList.remove('open');
 }
 
-function buildPreviewStages() {
-  document.getElementById('previewStages').innerHTML = STAGES
-    .filter(s => s.startH < fastDurationHours + 2)
-    .map(s => `
+// ─── SETUP LOGIC ──────────────────────────────────────────────────────────
+function selectPreset(el,hours){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); fastDurationHours=hours;
+  document.getElementById('durationDisplay').textContent=hours+' hours';
+  document.getElementById('protocolBadge').textContent=hours+':'+(24-hours);
+  updateEndDisplay(); buildPreviewStages();
+  try{localStorage.setItem('fastsync_preset',hours);}catch{}
+}
+
+function updateEndDisplay(){
+  const{h,m}=getTime24();
+  const d=new Date(); d.setHours(h,m,0,0); d.setHours(d.getHours()+fastDurationHours);
+  document.getElementById('endTimeDisplay').textContent=fmt12(d);
+}
+
+function fmt12(d){let h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;return`${h}:${String(m).padStart(2,'0')} ${ap}`;}
+function pad2(n){return String(n).padStart(2,'0');}
+function fmtHMS(ms){if(ms<=0)return'00:00:00';const s=Math.floor(ms/1000);return`${pad2(Math.floor(s/3600))}:${pad2(Math.floor(s%3600/60))}:${pad2(s%60)}`;}
+function fmtElapsed(ms){const m=Math.floor(ms/60000),h=Math.floor(m/60),rm=m%60;return h>0?`Fasting for ${h}h ${rm}m`:`Fasting for ${rm}m`;}
+function getStage(h){for(let i=STAGES.length-1;i>=0;i--)if(h>=STAGES[i].startH)return STAGES[i];return STAGES[0];}
+function stageLabel(s){
+  if(s.startH>=fastDurationHours)return`h${s.startH}+`;
+  const e=s.endH<=fastDurationHours?s.endH:fastDurationHours+'+';
+  return`h${s.startH}–${e}`;
+}
+
+function buildPreviewStages(){
+  document.getElementById('previewStages').innerHTML=STAGES
+    .filter(s=>s.startH<fastDurationHours+2)
+    .map(s=>`
       <div class="stage-item upcoming" style="margin-bottom:0">
         <div class="s-dot upcoming"></div>
         <div class="s-info">
           <div class="s-name">${s.icon} ${s.name} <span class="s-time">${stageLabel(s)}</span></div>
-          <div class="s-desc">${s.desc.substring(0, 100)}…</div>
+          <div class="s-desc">${s.desc}</div>
         </div>
       </div>`).join('');
 }
 
-// ─── TIMELINE (only re-renders when stage changes) ────────────────────────
-function buildTimeline(elapsedH) {
-  document.getElementById('stagesTimeline').innerHTML = STAGES.map(s => {
-    const done   = elapsedH >= s.endH;
-    const active = elapsedH >= s.startH && elapsedH < s.endH;
-    const cls = done ? 'done' : active ? 'active' : 'upcoming';
-    const dc  = done ? 'done' : active ? '' : 'upcoming';
-    const desc = active ? s.desc : (s.desc.substring(0, 95) + (s.desc.length > 95 ? '…' : ''));
-    return `<div class="stage-item ${cls}" style="margin-bottom:7px">
+function buildTimeline(elapsedH){
+  document.getElementById('stagesTimeline').innerHTML=STAGES.map(s=>{
+    const done=elapsedH>=s.endH, active=elapsedH>=s.startH&&elapsedH<s.endH;
+    const cls=done?'done':active?'active':'upcoming', dc=done?'done':active?'':'upcoming';
+    return`<div class="stage-item ${cls}" style="margin-bottom:7px">
       <div class="s-dot ${dc}"></div>
       <div class="s-info">
-        <div class="s-name">${s.icon} ${s.name}<span class="s-time">${stageLabel(s)}${done ? ' ✓' : ''}</span></div>
-        <div class="s-desc">${desc}</div>
+        <div class="s-name">${s.icon} ${s.name}<span class="s-time">${stageLabel(s)}${done?' ✓':''}</span></div>
+        <div class="s-desc">${active?s.full:s.desc}</div>
       </div></div>`;
   }).join('');
 }
 
 // ─── TICK ─────────────────────────────────────────────────────────────────
-function tick() {
-  if (isPaused) return;
-  const elapsed   = Date.now() - startTime - totalPausedMs;
-  const totalMs   = fastDurationHours * 3600000;
-  const remaining = totalMs - elapsed;
-  if (remaining <= 0) { completeFast(); return; }
-
-  const elapsedH = elapsed / 3600000;
-  const pct = Math.min(100, elapsed / totalMs * 100);
-
-  // Update ring arc
-  document.getElementById('arcProgress').style.strokeDashoffset = CIRC * (1 - pct / 100);
-  document.getElementById('ringTime').textContent    = fmtHMS(remaining);
-  document.getElementById('ringPct').textContent     = Math.floor(pct) + '%';
-  document.getElementById('ringElapsed').textContent = fmtElapsed(elapsed);
-
-  // Update stage card — only when stage changes (no flicker bug)
-  const stage = getStage(elapsedH);
-  const sid = stage.startH + stage.name;
-  if (sid !== lastStageId) {
-    lastStageId = sid;
-    document.getElementById('csIcon').textContent  = stage.icon;
-    document.getElementById('csName').textContent  = stage.name;
-    document.getElementById('csBadge').textContent = stage.badge;
-    document.getElementById('csDesc').textContent  = stage.desc;
+function tick(){
+  if(isPaused)return;
+  const elapsed=Date.now()-startTime-totalPausedMs;
+  const totalMs=fastDurationHours*3600000;
+  const remaining=totalMs-elapsed;
+  if(remaining<=0){completeFast();return;}
+  const elapsedH=elapsed/3600000;
+  const pct=Math.min(100,elapsed/totalMs*100);
+  document.getElementById('arcProgress').style.strokeDashoffset=CIRC*(1-pct/100);
+  document.getElementById('ringTime').textContent=fmtHMS(remaining);
+  document.getElementById('ringPct').textContent=Math.floor(pct)+'%';
+  document.getElementById('ringElapsed').textContent=fmtElapsed(elapsed);
+  const stage=getStage(elapsedH);
+  const sid=stage.startH+stage.name;
+  if(sid!==lastStageId){
+    lastStageId=sid;
+    document.getElementById('csIcon').textContent=stage.icon;
+    document.getElementById('csName').textContent=stage.name;
+    document.getElementById('csBadge').textContent=stage.badge;
+    document.getElementById('csDesc').textContent=stage.full;
   }
-
-  // Update ring markers
   updateMarkers(elapsedH);
-
-  // Rebuild timeline only when stage changes (not every second)
-  if (sid !== lastTimelineStageId) {
-    lastTimelineStageId = sid;
-    buildTimeline(elapsedH);
-  }
+  if(sid!==lastTimelineStageId){lastTimelineStageId=sid;buildTimeline(elapsedH);}
 }
 
-// ─── FAST CONTROLS ────────────────────────────────────────────────────────
-function startFast() {
-  const { h, m } = getTime24();
-  const now = new Date();
-  const s = new Date(); s.setHours(h, m, 0, 0);
-  if (s > now) s.setDate(s.getDate() - 1);
-  startTime = s.getTime();
-  totalPausedMs = 0; isPaused = false;
-  lastStageId = null; lastTimelineStageId = null; // BUG FIX: reset for new fast
-
-  document.getElementById('startedAt').textContent = fmt12(s);
-  document.getElementById('endsAt').textContent    = fmt12(new Date(startTime + fastDurationHours * 3600000));
-  document.getElementById('setupScreen').style.display = 'none';
-  document.getElementById('timerScreen').style.display = 'flex';
-
-  setTimeout(buildRingMarkers, 60);
-  tick();
-  timerInterval = setInterval(tick, 1000);
+// ─── CONTROLS ─────────────────────────────────────────────────────────────
+function startFast(){
+  const{h,m}=getTime24();
+  const now=new Date();
+  const s=new Date(); s.setHours(h,m,0,0);
+  if(s>now)s.setDate(s.getDate()-1);
+  startTime=s.getTime(); totalPausedMs=0; isPaused=false;
+  lastStageId=null; lastTimelineStageId=null;
+  document.getElementById('startedAt').textContent=fmt12(s);
+  document.getElementById('endsAt').textContent=fmt12(new Date(startTime+fastDurationHours*3600000));
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('timerScreen').style.display='flex';
+  setTimeout(buildRingMarkers,60);
+  tick(); timerInterval=setInterval(tick,1000);
 }
 
-function togglePause() {
-  const btn = document.getElementById('pauseBtn'), sub = document.getElementById('ringSub');
-  if (isPaused) {
-    totalPausedMs += Date.now() - pausedAt; isPaused = false;
-    btn.textContent = '⏸ Pause'; sub.textContent = 'REMAINING'; sub.classList.remove('pulsing');
-  } else {
-    pausedAt = Date.now(); isPaused = true;
-    btn.textContent = '▶ Resume'; sub.textContent = 'PAUSED'; sub.classList.add('pulsing');
-  }
+function togglePause(){
+  const btn=document.getElementById('pauseBtn'),sub=document.getElementById('ringSub');
+  if(isPaused){totalPausedMs+=Date.now()-pausedAt;isPaused=false;btn.textContent='⏸ Pause';sub.textContent='REMAINING';sub.classList.remove('pulsing');}
+  else{pausedAt=Date.now();isPaused=true;btn.textContent='▶ Resume';sub.textContent='PAUSED';sub.classList.add('pulsing');}
 }
+function stopFast(){if(!confirm('End your fast early?'))return;clearInterval(timerInterval);timerInterval=null;showComplete(false);}
+function completeFast(){clearInterval(timerInterval);timerInterval=null;showComplete(true);}
 
-function stopFast() {
-  if (!confirm('End your fast early?')) return;
-  clearInterval(timerInterval); timerInterval = null; // BUG FIX: null the interval
-  showComplete(false);
-}
-function completeFast() {
-  clearInterval(timerInterval); timerInterval = null;
-  showComplete(true);
-}
-
-function showComplete(full) {
-  const elapsed = (Date.now() - startTime - totalPausedMs) / 3600000;
-  const reached = STAGES.filter(s => elapsed >= s.startH);
-  const top = reached[reached.length - 1];
-  document.getElementById('timerScreen').style.display  = 'none';
-  document.getElementById('completeScreen').style.display = 'flex';
-  document.getElementById('completeSub').textContent = full
-    ? `You completed your ${fastDurationHours}-hour fast. Incredible work.`
-    : `You fasted for ${elapsed.toFixed(1)} hours. Every hour counts.`;
-  if (full) recordFastComplete();
-  document.getElementById('completeStats').innerHTML = `
+function showComplete(full){
+  const elapsed=(Date.now()-startTime-totalPausedMs)/3600000;
+  const reached=STAGES.filter(s=>elapsed>=s.startH),top=reached[reached.length-1];
+  document.getElementById('timerScreen').style.display='none';
+  document.getElementById('completeScreen').style.display='flex';
+  document.getElementById('completeSub').textContent=full?`You completed your ${fastDurationHours}-hour fast. Incredible work.`:`You fasted for ${elapsed.toFixed(1)} hours. Every hour counts.`;
+  if(full)recordFastComplete();
+  document.getElementById('completeStats').innerHTML=`
     <div class="stat-card"><div class="stat-val">${elapsed.toFixed(1)}h</div><div class="stat-lbl">Total fasted</div></div>
     <div class="stat-card"><div class="stat-val">${reached.length}</div><div class="stat-lbl">Stages reached</div></div>
     <div class="stat-card"><div class="stat-val">${top.icon}</div><div class="stat-lbl">${top.name}</div></div>
-    <div class="stat-card"><div class="stat-val">${Math.round(elapsed * 60)}m</div><div class="stat-lbl">Total minutes</div></div>`;
+    <div class="stat-card"><div class="stat-val">${Math.round(elapsed*60)}m</div><div class="stat-lbl">Total minutes</div></div>`;
 }
 
-function resetApp() {
-  clearInterval(timerInterval); timerInterval = null; // BUG FIX: always clear on reset
-  document.getElementById('completeScreen').style.display = 'none';
-  document.getElementById('setupScreen').style.display    = 'flex';
-  startTime = null; isPaused = false; totalPausedMs = 0;
-  lastStageId = null; lastTimelineStageId = null;
+function resetApp(){
+  clearInterval(timerInterval);timerInterval=null;
+  document.getElementById('completeScreen').style.display='none';
+  document.getElementById('setupScreen').style.display='flex';
+  startTime=null;isPaused=false;totalPausedMs=0;
+  lastStageId=null;lastTimelineStageId=null;
 }
-
 
 // ─── STREAK ───────────────────────────────────────────────────────────────
-function getStreak() {
-  try {
-    const data = JSON.parse(localStorage.getItem('fastsync_streak') || '{}');
-    return { count: data.count || 0, lastDate: data.lastDate || null };
-  } catch { return { count: 0, lastDate: null }; }
+function getStreak(){try{const d=JSON.parse(localStorage.getItem('fastsync_streak')||'{}');return{count:d.count||0,lastDate:d.lastDate||null};}catch{return{count:0,lastDate:null};}}
+function saveStreak(count,dateStr){try{localStorage.setItem('fastsync_streak',JSON.stringify({count,lastDate:dateStr}));}catch{}}
+function recordFastComplete(){
+  const today=new Date().toISOString().slice(0,10);
+  const{count,lastDate}=getStreak();
+  let n;
+  if(!lastDate){n=1;}
+  else{const diff=Math.round((new Date(today)-new Date(lastDate))/86400000);n=diff===1?count+1:diff===0?count:1;}
+  saveStreak(n,today);updateStreakBadge(n);
+}
+function updateStreakBadge(count){
+  const el=document.getElementById('streakBadge');if(!el)return;
+  const e=count>=30?'🏆':count>=14?'⚡':count>=7?'💪':'🔥';
+  el.textContent=`${e} ${count} day${count===1?'':'s'}`;
 }
 
-function saveStreak(count, dateStr) {
-  try { localStorage.setItem('fastsync_streak', JSON.stringify({ count, lastDate: dateStr })); } catch {}
-}
-
-function recordFastComplete() {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const { count, lastDate } = getStreak();
-  let newCount;
-  if (!lastDate) {
-    newCount = 1;
-  } else {
-    const last = new Date(lastDate);
-    const now  = new Date(today);
-    const diffDays = Math.round((now - last) / 86400000);
-    if (diffDays === 1) newCount = count + 1;      // consecutive day
-    else if (diffDays === 0) newCount = count;      // already logged today
-    else newCount = 1;                              // streak broken
-  }
-  saveStreak(newCount, today);
-  updateStreakBadge(newCount);
-}
-
-function updateStreakBadge(count) {
-  const el = document.getElementById('streakBadge');
-  if (!el) return;
-  const emoji = count >= 30 ? '🏆' : count >= 14 ? '⚡' : count >= 7 ? '💪' : '🔥';
-  el.textContent = `${emoji} ${count} day${count === 1 ? '' : 's'}`;
-}
-
-// Init
-try {
-  const saved = localStorage.getItem('fastsync_preset');
-  if (saved) {
-    const hours = parseInt(saved);
-    fastDurationHours = hours;
-    document.getElementById('durationDisplay').textContent = hours + ' hours';
-    document.getElementById('protocolBadge').textContent = hours + ':' + (24 - hours);
-    // Highlight the matching preset button
-    document.querySelectorAll('.preset-btn').forEach(b => {
-      b.classList.toggle('active', b.getAttribute('onclick') === 'selectPreset(this,' + hours + ')');
+// ─── INIT ─────────────────────────────────────────────────────────────────
+try{
+  const saved=localStorage.getItem('fastsync_preset');
+  if(saved){
+    const hours=parseInt(saved); fastDurationHours=hours;
+    document.getElementById('durationDisplay').textContent=hours+' hours';
+    document.getElementById('protocolBadge').textContent=hours+':'+(24-hours);
+    document.querySelectorAll('.preset-btn').forEach(b=>{
+      b.classList.toggle('active',b.getAttribute('onclick')==='selectPreset(this,'+hours+')');
     });
   }
-} catch {}
+}catch{}
 syncReadout();
 buildPreviewStages();
 updateStreakBadge(getStreak().count);
