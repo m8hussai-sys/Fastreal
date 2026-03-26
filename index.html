@@ -616,27 +616,51 @@ function buildTimeline(elapsedH){
 }
 
 // ─── TICK ─────────────────────────────────────────────────────────────────
+function fmtOverage(ms){
+  const s=Math.floor(ms/1000);
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sc=s%60;
+  return h>0?`+${h}h ${pad2(m)}m`:`+${pad2(m)}m ${pad2(sc)}s`;
+}
+
 function tick(){
   if(isPaused)return;
   const elapsed=Date.now()-startTime-totalPausedMs;
   const totalMs=fastDurationHours*3600000;
   const remaining=totalMs-elapsed;
-  if(remaining<=0){completeFast();return;}
+  const pastGoal=remaining<=0;
   const elapsedH=elapsed/3600000;
   const pct=Math.min(100,elapsed/totalMs*100);
-  document.getElementById('arcProgress').style.strokeDashoffset=CIRC*(1-pct/100);
-  document.getElementById('ringTime').textContent=fmtHMS(remaining);
-  document.getElementById('ringPct').textContent=Math.floor(pct)+'%';
-  document.getElementById('ringElapsed').textContent=fmtElapsed(elapsed);
+
+  // Arc stays full once goal is hit; glow gold to celebrate
+  document.getElementById('arcProgress').style.strokeDashoffset = pastGoal ? 0 : CIRC*(1-pct/100);
+  if(pastGoal){
+    document.getElementById('arcProgress').setAttribute('stroke','#f7c873');
+    document.getElementById('ringPct').textContent='🎯';
+    document.getElementById('ringTime').textContent=fmtOverage(Math.abs(remaining));
+    document.getElementById('ringSub').textContent='BEYOND GOAL';
+    document.getElementById('ringElapsed').textContent=fmtElapsed(elapsed);
+  } else {
+    document.getElementById('arcProgress').setAttribute('stroke','url(#arcGrad)');
+    document.getElementById('ringTime').textContent=fmtHMS(remaining);
+    document.getElementById('ringPct').textContent=Math.floor(pct)+'%';
+    document.getElementById('ringSub').textContent='REMAINING';
+    document.getElementById('ringElapsed').textContent=fmtElapsed(elapsed);
+  }
+
   const stage=getStage(elapsedH);
   const sid=stage.startH+stage.name;
   if(sid!==lastStageId){
     lastStageId=sid;
     document.getElementById('csIcon').textContent=stage.icon;
     document.getElementById('csName').textContent=stage.name;
-    document.getElementById('csBadge').textContent=stage.badge;
+    // If past goal, override badge to show exceeding
+    document.getElementById('csBadge').textContent=pastGoal?'🏆 Exceeding Goal':stage.badge;
     document.getElementById('csDesc').textContent=stage.full;
+  } else if(pastGoal){
+    // Keep badge updated even if stage hasn't changed
+    document.getElementById('csBadge').textContent='🏆 Exceeding Goal';
   }
+
   updateMarkers(elapsedH);
   if(sid!==lastTimelineStageId){lastTimelineStageId=sid;buildTimeline(elapsedH);}
 }
