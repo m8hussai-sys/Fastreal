@@ -418,6 +418,7 @@ function selectPreset(el, hours) {
   document.getElementById('protocolBadge').textContent = hours + ':' + (24 - hours);
   updateEndDisplay();
   buildPreviewStages();
+  try { localStorage.setItem('fastsync_preset', hours); } catch {}
 }
 
 function updateEndDisplay() {
@@ -599,6 +600,19 @@ function updateStreakBadge(count) {
 }
 
 // Init
+try {
+  const saved = localStorage.getItem('fastsync_preset');
+  if (saved) {
+    const hours = parseInt(saved);
+    fastDurationHours = hours;
+    document.getElementById('durationDisplay').textContent = hours + ' hours';
+    document.getElementById('protocolBadge').textContent = hours + ':' + (24 - hours);
+    // Highlight the matching preset button
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('onclick') === 'selectPreset(this,' + hours + ')');
+    });
+  }
+} catch {}
 syncReadout();
 buildPreviewStages();
 updateStreakBadge(getStreak().count);
