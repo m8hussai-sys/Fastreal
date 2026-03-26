@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FastSync</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FastSync">
+<meta name="theme-color" content="#050c12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#050c12; --surface:#0b1822; --surface2:#0f2030;
+    --border:rgba(80,180,160,0.15); --accent:#3fe8c0; --accent3:#e87b6a;
+    --text:#d6eee8; --muted:rgba(214,238,232,0.45);
+    --glow:rgba(63,232,192,0.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100dvh;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;}
+  .noise{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.6;}
+  .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;}
+  .orb1{width:300px;height:300px;background:rgba(63,232,192,0.07);top:-80px;left:-60px;}
+  .orb2{width:250px;height:250px;background:rgba(247,200,115,0.05);bottom:100px;right:-80px;}
+  .app{position:relative;z-index:1;width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:40px;}
+
+  .header{display:flex;justify-content:space-between;align-items:center;padding:52px 24px 14px;}
+  .logo{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--accent);letter-spacing:-0.5px;}
+  .logo span{color:var(--text);}
+  .badge{font-family:'DM Mono',monospace;font-size:0.65rem;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;letter-spacing:0.08em;}
+
+  #setupScreen{padding:10px 24px 0;flex:1;display:flex;flex-direction:column;gap:18px;}
+  .section-label{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;}
+  .preset-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .preset-btn{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 6px;cursor:pointer;text-align:center;transition:all 0.2s;display:flex;flex-direction:column;gap:4px;align-items:center;}
+  .preset-btn.active{background:rgba(63,232,192,0.12);border-color:var(--accent);box-shadow:0 0 20px var(--glow);}
+  .preset-btn .ratio{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--accent);}
+  .preset-btn .name{font-size:0.58rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+  .wheel-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 20px;}
+  .wheel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .wheel-header .section-label{margin-bottom:0;}
+  .wheel-readout{font-family:'DM Mono',monospace;font-size:1.05rem;color:var(--accent);}
+  .spin-outer{position:relative;height:154px;border-radius:14px;background:var(--surface2);overflow:hidden;display:flex;}
+  .spin-outer::before,.spin-outer::after{content:'';position:absolute;left:0;right:0;height:46px;z-index:3;pointer-events:none;}
+  .spin-outer::before{top:0;background:linear-gradient(to bottom,var(--surface2) 10%,transparent);}
+  .spin-outer::after{bottom:0;background:linear-gradient(to top,var(--surface2) 10%,transparent);}
+  .spin-sel{position:absolute;left:6px;right:6px;top:50%;transform:translateY(-50%);height:44px;border-radius:10px;background:rgba(63,232,192,0.09);border:1px solid rgba(63,232,192,0.24);pointer-events:none;z-index:2;}
+  .spin-col{flex:1;overflow:hidden;position:relative;cursor:grab;touch-action:none;user-select:none;}
+  .spin-col:active{cursor:grabbing;}
+  .spin-sep{flex-shrink:0;width:16px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.2rem;color:var(--muted);z-index:4;}
+  .spin-inner{position:absolute;left:0;right:0;will-change:transform;}
+  .spin-item{height:44px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.18rem;color:var(--muted);flex-shrink:0;}
+  .spin-item.sel{color:var(--text);font-size:1.32rem;font-weight:500;}
+  .spin-col-ap .spin-item{font-size:0.88rem;letter-spacing:0.07em;}
+  .spin-col-ap .spin-item.sel{font-size:0.98rem;}
+
+  .time-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 20px;}
+  .time-row{display:flex;justify-content:space-between;align-items:center;}
+  .time-label{font-size:0.8rem;color:var(--muted);}
+  .time-val{font-family:'DM Mono',monospace;font-size:1.2rem;color:var(--text);}
+  .divider{height:1px;background:var(--border);margin:14px 0;}
+  .start-btn{background:var(--accent);color:#050c12;border:none;border-radius:18px;padding:18px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;cursor:pointer;width:100%;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 0 30px var(--glow);}
+  .start-btn:active{transform:scale(0.97);}
+
+  #timerScreen{display:none;flex-direction:column;align-items:center;padding:0 20px;flex:1;}
+
+  .ring-outer{position:relative;width:300px;height:300px;margin:8px auto 6px;flex-shrink:0;}
+  .ring-outer svg{position:absolute;inset:0;width:100%;height:100%;}
+  .stage-marker{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--surface2);border:2px solid rgba(63,232,192,0.2);transition:background 0.4s,border-color 0.4s,box-shadow 0.4s;transform:translate(-50%,-50%);z-index:5;}
+  .stage-marker.reached{background:rgba(63,232,192,0.18);border-color:var(--accent);box-shadow:0 0 14px var(--glow);}
+  .stage-marker.current{background:rgba(63,232,192,0.28);border-color:var(--accent);box-shadow:0 0 22px var(--glow),0 0 40px rgba(63,232,192,0.15);transform:translate(-50%,-50%) scale(1.18);}
+  .ring-centre{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;}
+  .ring-pct{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--accent);}
+  .ring-time{font-family:'DM Mono',monospace;font-size:2.5rem;color:var(--text);letter-spacing:-1px;}
+  .ring-sub{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;}
+  .ring-elapsed{font-size:0.75rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+  .se-row{display:grid;grid-template-columns:1fr 1px 1fr;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;}
+  .se-cell{padding:12px 16px;}
+  .se-divider{background:var(--border);}
+  .se-lbl{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+  .se-val{font-family:'DM Mono',monospace;font-size:0.95rem;color:var(--text);}
+
+  .current-stage{background:var(--surface);border:1px solid var(--accent);border-radius:18px;padding:14px 16px;width:100%;margin-bottom:12px;}
+  .stage-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .stage-icon-lg{font-size:1.35rem;}
+  .stage-name{font-family:'DM Serif Display',serif;font-size:1.1rem;}
+  .stage-badge{margin-left:auto;font-family:'DM Mono',monospace;font-size:0.58rem;background:rgba(63,232,192,0.12);border:1px solid var(--accent);color:var(--accent);padding:3px 8px;border-radius:20px;white-space:nowrap;}
+  .stage-desc{font-size:0.78rem;color:var(--muted);line-height:1.55;}
+
+  .stages-list{width:100%;display:flex;flex-direction:column;gap:7px;}
+  .slabel{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;}
+  .stage-item{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;display:flex;align-items:flex-start;gap:11px;transition:all 0.3s;}
+  .stage-item.active{border-color:var(--accent);background:rgba(63,232,192,0.07);}
+  .stage-item.done{border-color:rgba(63,232,192,0.3);opacity:0.55;}
+  .stage-item.upcoming{opacity:0.38;}
+  .s-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px var(--accent);}
+  .s-dot.done{background:rgba(63,232,192,0.4);box-shadow:none;}
+  .s-dot.upcoming{background:var(--surface2);border:1px solid var(--border);box-shadow:none;}
+  .s-info{flex:1;}
+  .s-name{font-size:0.83rem;font-weight:500;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center;}
+  .s-time{font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--muted);}
+  .s-desc{font-size:0.7rem;color:var(--muted);line-height:1.45;}
+
+  .controls{display:flex;gap:10px;width:100%;margin-top:12px;}
+  .ctrl-btn{flex:1;border-radius:14px;padding:15px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+  .ctrl-btn.stop{background:rgba(232,123,106,0.12);color:var(--accent3);border-color:rgba(232,123,106,0.3);}
+  .ctrl-btn.pause{background:var(--surface);color:var(--text);}
+  .ctrl-btn:active{transform:scale(0.96);}
+
+  #completeScreen{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:24px;text-align:center;gap:16px;}
+  .complete-icon{font-size:4rem;}
+  .complete-title{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--accent);}
+  .complete-sub{color:var(--muted);font-size:0.9rem;line-height:1.5;max-width:280px;}
+  .complete-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;}
+  .stat-val{font-family:'DM Mono',monospace;font-size:1.2rem;color:var(--accent);}
+  .stat-lbl{font-size:0.7rem;color:var(--muted);margin-top:3px;}
+  .reset-btn{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 40px;color:var(--text);font-family:'DM Sans';font-size:0.9rem;cursor:pointer;}
+
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+  .pulsing{animation:pulse 2s ease-in-out infinite;}
+  @keyframes markerPop{0%{transform:translate(-50%,-50%) scale(0.7)}60%{transform:translate(-50%,-50%) scale(1.28)}100%{transform:translate(-50%,-50%) scale(1.18)}}
+  .stage-marker.current{animation:markerPop 0.35s ease-out forwards;}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="app">
+  <div class="header">
+    <div class="logo">Fast<span>Sync</span></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="badge" id="streakBadge" style="cursor:default;">🔥 0 days</div>
+      <div class="badge" id="protocolBadge">16:8</div>
+    </div>
+  </div>
+
+  <div id="setupScreen">
+    <div>
+      <div class="section-label">Fast Protocol</div>
+      <div class="preset-grid">
+        <button class="preset-btn active" onclick="selectPreset(this,16)"><span class="ratio">16:8</span><span class="name">Popular</span></button>
+        <button class="preset-btn" onclick="selectPreset(this,17)"><span class="ratio">17:7</span><span class="name">Boost</span></button>
+        <button class="preset-btn" onclick="selectPreset(this,18)"><span class="ratio">18:6</span><span class="name">Advanced</span></button>
+        <button class="preset-btn" onclick="selectPreset(this,20)"><span class="ratio">20:4</span><span class="name">Warrior</span></button>
+        <button class="preset-btn" onclick="selectPreset(this,24)"><span class="ratio">24h</span><span class="name">Extended</span></button>
+      </div>
+    </div>
+    <div class="wheel-card">
+      <div class="wheel-header">
+        <div class="section-label">Fast Starts At</div>
+        <div class="wheel-readout" id="wheelReadout">8:00 PM</div>
+      </div>
+      <div class="spin-outer">
+        <div class="spin-sel"></div>
+        <div class="spin-col" id="colH"></div>
+        <div class="spin-sep">:</div>
+        <div class="spin-col" id="colM"></div>
+        <div class="spin-sep">&nbsp;</div>
+        <div class="spin-col spin-col-ap" id="colAP"></div>
+      </div>
+    </div>
+    <div class="time-card">
+      <div class="time-row"><span class="time-label">Duration</span><span class="time-val" id="durationDisplay">16 hours</span></div>
+      <div class="divider"></div>
+      <div class="time-row"><span class="time-label">Eating window opens at</span><span class="time-val" id="endTimeDisplay">12:00 PM</span></div>
+    </div>
+    <button class="start-btn" onclick="startFast()">⚡ Start Fasting Now</button>
+    <div>
+      <div class="section-label">Body Stages Preview</div>
+      <div class="stages-list" id="previewStages"></div>
+    </div>
+  </div>
+
+  <div id="timerScreen">
+    <div class="ring-outer" id="ringOuter">
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
+        <defs>
+          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#3fe8c0"/>
+            <stop offset="100%" style="stop-color:#7fffd4"/>
+          </linearGradient>
+        </defs>
+        <circle cx="150" cy="150" r="126" fill="none" stroke="rgba(63,232,192,0.08)" stroke-width="18"/>
+        <circle id="arcProgress" cx="150" cy="150" r="126" fill="none"
+          stroke="url(#arcGrad)" stroke-width="18" stroke-linecap="round"
+          stroke-dasharray="791.7" stroke-dashoffset="791.7"
+          style="transition:stroke-dashoffset 1s linear;"/>
+      </svg>
+      <div id="ringMarkers"></div>
+      <div class="ring-centre">
+        <div class="ring-pct" id="ringPct">0%</div>
+        <div class="ring-time" id="ringTime">00:00:00</div>
+        <div class="ring-sub" id="ringSub">REMAINING</div>
+        <div class="ring-elapsed" id="ringElapsed">Fasting for 0m</div>
+      </div>
+    </div>
+    <div class="se-row">
+      <div class="se-cell"><div class="se-lbl">START FAST</div><div class="se-val" id="startedAt">—</div></div>
+      <div class="se-divider"></div>
+      <div class="se-cell"><div class="se-lbl">END FAST</div><div class="se-val" id="endsAt">—</div></div>
+    </div>
+    <div class="current-stage" id="currentStageCard">
+      <div class="stage-header">
+        <span class="stage-icon-lg" id="csIcon">⏳</span>
+        <span class="stage-name" id="csName">Starting…</span>
+        <span class="stage-badge" id="csBadge">—</span>
+      </div>
+      <div class="stage-desc" id="csDesc"></div>
+    </div>
+    <div class="stages-list">
+      <div class="slabel">All Stages</div>
+      <div id="stagesTimeline"></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn pause" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+      <button class="ctrl-btn stop" onclick="stopFast()">✕ End Fast</button>
+    </div>
+  </div>
+
+  <div id="completeScreen">
+    <div class="complete-icon">🏆</div>
+    <div class="complete-title">Fast Complete!</div>
+    <div class="complete-sub" id="completeSub"></div>
+    <div class="complete-stats" id="completeStats"></div>
+    <button class="reset-btn" onclick="resetApp()">← New Fast</button>
+  </div>
+</div>
+
+<script>
+// ─── STAGES (lipolysis is now a full first-class stage) ───────────────────
+const STAGES = [
+  {
+    startH: 0, endH: 4, icon: '🍽️', name: 'Fed State', badge: 'Digesting',
+    desc: 'Your body is actively digesting your last meal. Blood glucose rises and your pancreas releases insulin to shuttle that glucose into cells for energy. Every cell is running on food fuel right now. Insulin also signals your fat cells to store energy, not release it — so zero fat burning is happening. This phase lasts roughly 0–4 hours depending on how large or carb-heavy your meal was.'
+  },
+  {
+    startH: 4, endH: 8, icon: '📉', name: 'Early Fasting', badge: 'Insulin Dropping',
+    desc: 'Digestion is complete and your blood glucose is falling. Insulin drops and its opposite hormone, glucagon, rises. Glucagon signals the liver to start breaking down its glycogen reserves — the stored form of glucose — and releasing it as sugar to keep your brain and body fuelled. Your fat cells are starting to release fatty acids into the bloodstream, but glycogen is still the dominant fuel. Your body is coasting on its reserves.'
+  },
+  {
+    startH: 8, endH: 12, icon: '💧', name: 'Lipolysis', badge: 'Fat Mobilising',
+    desc: 'Liver glycogen is roughly 50% depleted. Insulin is now low enough that your fat cells are getting a clear signal to open up. Lipolysis — the breakdown of stored fat (triglycerides) into glycerol and free fatty acids — is accelerating meaningfully. Those fatty acids are now circulating in your blood as an energy source. Your muscles are increasingly burning fat directly. This is the gateway to ketosis: no lipolysis means no ketones, and right now it is ramping up fast.'
+  },
+  {
+    startH: 12, endH: 14, icon: '🔄', name: 'Metabolic Switch', badge: 'Mild Ketosis',
+    desc: 'Liver glycogen is nearly exhausted. Your body is crossing the metabolic crossover point — the moment it shifts from carbohydrates to fat as its primary fuel. Peer-reviewed research confirms that blood ketone levels (specifically beta-hydroxybutyrate, or BHB) begin rising measurably at 12–14 hours. The liver is now actively converting fatty acids into ketone bodies. If you ate low-carb before fasting, you may have crossed this point earlier. Mild hunger and mental fogginess here are normal — they pass.'
+  },
+  {
+    startH: 14, endH: 17, icon: '🔥', name: 'Ketosis Building', badge: 'Fat Burning',
+    desc: 'Fat is now your primary fuel. Ketone production is accelerating as the liver ramps up conversion of fatty acids into BHB and other ketones. Your muscles, heart, and increasingly your brain are running on ketones. By 16–17 hours of daily fasting, human studies have confirmed measurable upregulation of autophagy genes (ATG5, ULK1, BECN1) — your cells are beginning to prepare their internal recycling machinery. Growth hormone is rising to actively protect your muscle mass from being broken down for energy.'
+  },
+  {
+    startH: 17, endH: 24, icon: '⚡', name: 'Full Ketosis', badge: 'Peak Fat Burn',
+    desc: 'You have reached full nutritional ketosis (BHB ≥ 0.5 mmol/L). Ketones are your dominant fuel source and fat breakdown is at its peak. Insulin is at its lowest point of the entire day, which means fat cells are maximally open. A useful side effect: ketones suppress ghrelin, the hormone that makes you feel hungry — which is why hunger often paradoxically decreases the longer you fast. Growth hormone is significantly elevated, preserving lean muscle. Autophagy pathways continue to build.'
+  },
+  {
+    startH: 24, endH: 48, icon: '🧬', name: 'Autophagy Activating', badge: 'Cellular Cleanup',
+    desc: 'With glucose and insulin at their lowest sustained levels, autophagy — your cells\' internal recycling process — is now meaningfully active. Autophagy literally means "self-eating": cells identify and break down damaged proteins, dysfunctional organelles, and cellular debris, then repurpose those components as fuel or building material. Studies have detected autophagy markers in human immune cells around 24 hours. The result is reduced inflammation, better cellular efficiency, and activation of longevity pathways. Note: individual timing varies — some researchers place robust human autophagy at 2–4 days.'
+  },
+  {
+    startH: 48, endH: 168, icon: '✨', name: 'Extended Fast', badge: 'Deep Renewal',
+    desc: 'Autophagy is at its most intensive level, peaking around 48–72 hours in animal studies. Stem cell production is stimulated, particularly in the gut. The immune system undergoes a partial reset as old immune cells are cleared and new ones are generated. Ketone levels are very high, providing powerful anti-inflammatory and neuroprotective effects. Important: fasts of this length carry real risks including electrolyte imbalance and muscle loss. This should only be undertaken with medical supervision and careful preparation.'
+  }
+];
+
+// ─── RING GEOMETRY (300×300 SVG, r=126) ──────────────────────────────────
+const CX = 150, CY = 150, R = 126, CIRC = 2 * Math.PI * R; // 791.7
+
+function hToAngle(h, total) { return (h / total) * 360; }
+function angleToXY(deg) {
+  const rad = (deg - 90) * Math.PI / 180;
+  return { x: CX + R * Math.cos(rad), y: CY + R * Math.sin(rad) };
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let fastDurationHours = 16;
+let markerEls = [];
+let startTime = null, timerInterval = null;
+let isPaused = false, pausedAt = null, totalPausedMs = 0;
+let lastStageId = null, lastTimelineStageId = null;
+
+// ─── RING MARKERS ─────────────────────────────────────────────────────────
+function buildRingMarkers() {
+  const container = document.getElementById('ringMarkers');
+  container.innerHTML = '';
+  markerEls = [];
+
+  STAGES.forEach(s => {
+    if (s.startH === 0) return;
+    if (s.startH > fastDurationHours + 0.5) return;
+    const pos = angleToXY(hToAngle(s.startH, fastDurationHours));
+    const el = document.createElement('div');
+    el.className = 'stage-marker';
+    el.textContent = s.icon;
+    el.style.left = (pos.x / 300 * 100) + '%';
+    el.style.top  = (pos.y / 300 * 100) + '%';
+    el.title = s.name;
+    container.appendChild(el);
+    markerEls.push({ el, stageId: s.startH + s.name });
+  });
+
+  // Goal marker at 12 o'clock
+  const g = document.createElement('div');
+  g.className = 'stage-marker';
+  g.textContent = '🎯';
+  g.style.left = '50%';
+  g.style.top  = '0%';
+  g.style.transform = 'translate(-50%, -50%)';
+  g.id = 'goalMarker';
+  container.appendChild(g);
+}
+
+function updateMarkers(elapsedH) {
+  STAGES.forEach((s, i) => {
+    if (s.startH === 0 || s.startH > fastDurationHours + 0.5) return;
+    const me = markerEls[i - 1]; // markerEls skips startH=0 stage
+    if (!me) return;
+    const reached  = elapsedH >= s.startH;
+    const isCurrent = elapsedH >= s.startH && elapsedH < s.endH;
+    me.el.classList.toggle('reached', reached && !isCurrent);
+    me.el.classList.toggle('current', isCurrent);
+  });
+  const g = document.getElementById('goalMarker');
+  if (g) g.classList.toggle('reached', elapsedH >= fastDurationHours);
+}
+
+// ─── SPIN WHEEL ───────────────────────────────────────────────────────────
+const IH = 44, COL_H = 154;
+function buildWheel(colEl, items, initIdx, onChange) {
+  const PAD = Math.ceil(COL_H / 2 / IH);
+  const inner = document.createElement('div');
+  inner.className = 'spin-inner';
+  colEl.appendChild(inner);
+  let idx = Math.max(0, Math.min(items.length - 1, initIdx));
+
+  function iT(i) { return (COL_H / 2 - IH / 2) - (PAD + i) * IH; }
+  function render(ci) {
+    inner.innerHTML = '';
+    for (let r = -PAD; r < items.length + PAD; r++) {
+      const d = document.createElement('div');
+      d.className = 'spin-item' + (r === ci ? ' sel' : '');
+      d.textContent = (r >= 0 && r < items.length) ? items[r] : '';
+      inner.appendChild(d);
+    }
+  }
+  function snap(i) {
+    i = Math.max(0, Math.min(items.length - 1, i));
+    idx = i;
+    inner.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+    inner.style.transform = `translateY(${iT(i)}px)`;
+    render(i); onChange(i);
+  }
+  function cT() { return new DOMMatrix(getComputedStyle(inner).transform).m42; }
+  function tI(t) { return Math.round(((COL_H / 2 - IH / 2) - t) / IH - PAD); }
+
+  inner.style.transform = `translateY(${iT(idx)}px)`; render(idx);
+  let sy = 0, bt = 0, drag = false, vy = 0, ly = 0, lt = 0, raf = null;
+  const gy = e => e.touches ? e.touches[0].clientY : e.clientY;
+
+  colEl.addEventListener('touchstart', e => { cancelAnimationFrame(raf); inner.style.transition = 'none'; drag = true; sy = gy(e); bt = cT(); vy = 0; ly = sy; lt = Date.now(); e.preventDefault(); }, { passive: false });
+  colEl.addEventListener('touchmove',  e => { if (!drag) return; const y = gy(e), now = Date.now(), dt = now - lt || 1; vy = (y - ly) / dt; ly = y; lt = now; inner.style.transform = `translateY(${bt + (y - sy)}px)`; e.preventDefault(); }, { passive: false });
+  colEl.addEventListener('touchend',   () => { if (!drag) return; drag = false; let v = vy * 60, c = cT(); function coast() { v *= 0.86; c += v; inner.style.transform = `translateY(${c}px)`; if (Math.abs(v) > 0.4) raf = requestAnimationFrame(coast); else snap(tI(c)); } coast(); });
+  colEl.addEventListener('mousedown',  e => { cancelAnimationFrame(raf); inner.style.transition = 'none'; drag = true; sy = e.clientY; bt = cT(); vy = 0; ly = sy; lt = Date.now(); });
+  window.addEventListener('mousemove', e => { if (!drag) return; const now = Date.now(), dt = now - lt || 1; vy = (e.clientY - ly) / dt; ly = e.clientY; lt = now; inner.style.transform = `translateY(${bt + (e.clientY - sy)}px)`; });
+  window.addEventListener('mouseup',   () => { if (!drag) return; drag = false; let v = vy * 60, c = cT(); function coast() { v *= 0.86; c += v; inner.style.transform = `translateY(${c}px)`; if (Math.abs(v) > 0.4) raf = requestAnimationFrame(coast); else snap(tI(c)); } coast(); });
+  return { snap, getIdx: () => idx };
+}
+
+const hourItems = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+const minItems  = ['00','05','10','15','20','25','30','35','40','45','50','55'];
+const apItems   = ['AM','PM'];
+let selHr = 7, selMin = 0, selAP = 1;
+
+function syncReadout() {
+  document.getElementById('wheelReadout').textContent = `${hourItems[selHr]}:${minItems[selMin]} ${apItems[selAP]}`;
+  updateEndDisplay();
+}
+buildWheel(document.getElementById('colH'),  hourItems, 7, i => { selHr  = i; syncReadout(); });
+buildWheel(document.getElementById('colM'),  minItems,  0, i => { selMin = i; syncReadout(); });
+buildWheel(document.getElementById('colAP'), apItems,   1, i => { selAP  = i; syncReadout(); });
+
+function getTime24() {
+  let h = parseInt(hourItems[selHr]); const ap = apItems[selAP];
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return { h, m: parseInt(minItems[selMin]) };
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────
+function fmt12(d) { let h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`; }
+function pad2(n)  { return String(n).padStart(2, '0'); }
+function fmtHMS(ms) { if (ms <= 0) return '00:00:00'; const s = Math.floor(ms / 1000); return `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor(s % 3600 / 60))}:${pad2(s % 60)}`; }
+function fmtElapsed(ms) { const m = Math.floor(ms / 60000), h = Math.floor(m / 60), rm = m % 60; return h > 0 ? `Fasting for ${h}h ${rm}m` : `Fasting for ${rm}m`; }
+
+function getStage(elapsedH) {
+  for (let i = STAGES.length - 1; i >= 0; i--)
+    if (elapsedH >= STAGES[i].startH) return STAGES[i];
+  return STAGES[0];
+}
+
+function stageLabel(s) {
+  if (s.startH >= fastDurationHours) return `h${s.startH}+`;
+  const end = s.endH <= fastDurationHours ? s.endH : fastDurationHours + '+';
+  return `h${s.startH}–${end}`;
+}
+
+// ─── SETUP SCREEN ─────────────────────────────────────────────────────────
+function selectPreset(el, hours) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  fastDurationHours = hours;
+  document.getElementById('durationDisplay').textContent = hours + ' hours';
+  document.getElementById('protocolBadge').textContent = hours + ':' + (24 - hours);
+  updateEndDisplay();
+  buildPreviewStages();
+}
+
+function updateEndDisplay() {
+  const { h, m } = getTime24();
+  const d = new Date(); d.setHours(h, m, 0, 0); d.setHours(d.getHours() + fastDurationHours);
+  document.getElementById('endTimeDisplay').textContent = fmt12(d);
+}
+
+function buildPreviewStages() {
+  document.getElementById('previewStages').innerHTML = STAGES
+    .filter(s => s.startH < fastDurationHours + 2)
+    .map(s => `
+      <div class="stage-item upcoming" style="margin-bottom:0">
+        <div class="s-dot upcoming"></div>
+        <div class="s-info">
+          <div class="s-name">${s.icon} ${s.name} <span class="s-time">${stageLabel(s)}</span></div>
+          <div class="s-desc">${s.desc.substring(0, 100)}…</div>
+        </div>
+      </div>`).join('');
+}
+
+// ─── TIMELINE (only re-renders when stage changes) ────────────────────────
+function buildTimeline(elapsedH) {
+  document.getElementById('stagesTimeline').innerHTML = STAGES.map(s => {
+    const done   = elapsedH >= s.endH;
+    const active = elapsedH >= s.startH && elapsedH < s.endH;
+    const cls = done ? 'done' : active ? 'active' : 'upcoming';
+    const dc  = done ? 'done' : active ? '' : 'upcoming';
+    const desc = active ? s.desc : (s.desc.substring(0, 95) + (s.desc.length > 95 ? '…' : ''));
+    return `<div class="stage-item ${cls}" style="margin-bottom:7px">
+      <div class="s-dot ${dc}"></div>
+      <div class="s-info">
+        <div class="s-name">${s.icon} ${s.name}<span class="s-time">${stageLabel(s)}${done ? ' ✓' : ''}</span></div>
+        <div class="s-desc">${desc}</div>
+      </div></div>`;
+  }).join('');
+}
+
+// ─── TICK ─────────────────────────────────────────────────────────────────
+function tick() {
+  if (isPaused) return;
+  const elapsed   = Date.now() - startTime - totalPausedMs;
+  const totalMs   = fastDurationHours * 3600000;
+  const remaining = totalMs - elapsed;
+  if (remaining <= 0) { completeFast(); return; }
+
+  const elapsedH = elapsed / 3600000;
+  const pct = Math.min(100, elapsed / totalMs * 100);
+
+  // Update ring arc
+  document.getElementById('arcProgress').style.strokeDashoffset = CIRC * (1 - pct / 100);
+  document.getElementById('ringTime').textContent    = fmtHMS(remaining);
+  document.getElementById('ringPct').textContent     = Math.floor(pct) + '%';
+  document.getElementById('ringElapsed').textContent = fmtElapsed(elapsed);
+
+  // Update stage card — only when stage changes (no flicker bug)
+  const stage = getStage(elapsedH);
+  const sid = stage.startH + stage.name;
+  if (sid !== lastStageId) {
+    lastStageId = sid;
+    document.getElementById('csIcon').textContent  = stage.icon;
+    document.getElementById('csName').textContent  = stage.name;
+    document.getElementById('csBadge').textContent = stage.badge;
+    document.getElementById('csDesc').textContent  = stage.desc;
+  }
+
+  // Update ring markers
+  updateMarkers(elapsedH);
+
+  // Rebuild timeline only when stage changes (not every second)
+  if (sid !== lastTimelineStageId) {
+    lastTimelineStageId = sid;
+    buildTimeline(elapsedH);
+  }
+}
+
+// ─── FAST CONTROLS ────────────────────────────────────────────────────────
+function startFast() {
+  const { h, m } = getTime24();
+  const now = new Date();
+  const s = new Date(); s.setHours(h, m, 0, 0);
+  if (s > now) s.setDate(s.getDate() - 1);
+  startTime = s.getTime();
+  totalPausedMs = 0; isPaused = false;
+  lastStageId = null; lastTimelineStageId = null; // BUG FIX: reset for new fast
+
+  document.getElementById('startedAt').textContent = fmt12(s);
+  document.getElementById('endsAt').textContent    = fmt12(new Date(startTime + fastDurationHours * 3600000));
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('timerScreen').style.display = 'flex';
+
+  setTimeout(buildRingMarkers, 60);
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function togglePause() {
+  const btn = document.getElementById('pauseBtn'), sub = document.getElementById('ringSub');
+  if (isPaused) {
+    totalPausedMs += Date.now() - pausedAt; isPaused = false;
+    btn.textContent = '⏸ Pause'; sub.textContent = 'REMAINING'; sub.classList.remove('pulsing');
+  } else {
+    pausedAt = Date.now(); isPaused = true;
+    btn.textContent = '▶ Resume'; sub.textContent = 'PAUSED'; sub.classList.add('pulsing');
+  }
+}
+
+function stopFast() {
+  if (!confirm('End your fast early?')) return;
+  clearInterval(timerInterval); timerInterval = null; // BUG FIX: null the interval
+  showComplete(false);
+}
+function completeFast() {
+  clearInterval(timerInterval); timerInterval = null;
+  showComplete(true);
+}
+
+function showComplete(full) {
+  const elapsed = (Date.now() - startTime - totalPausedMs) / 3600000;
+  const reached = STAGES.filter(s => elapsed >= s.startH);
+  const top = reached[reached.length - 1];
+  document.getElementById('timerScreen').style.display  = 'none';
+  document.getElementById('completeScreen').style.display = 'flex';
+  document.getElementById('completeSub').textContent = full
+    ? `You completed your ${fastDurationHours}-hour fast. Incredible work.`
+    : `You fasted for ${elapsed.toFixed(1)} hours. Every hour counts.`;
+  if (full) recordFastComplete();
+  document.getElementById('completeStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${elapsed.toFixed(1)}h</div><div class="stat-lbl">Total fasted</div></div>
+    <div class="stat-card"><div class="stat-val">${reached.length}</div><div class="stat-lbl">Stages reached</div></div>
+    <div class="stat-card"><div class="stat-val">${top.icon}</div><div class="stat-lbl">${top.name}</div></div>
+    <div class="stat-card"><div class="stat-val">${Math.round(elapsed * 60)}m</div><div class="stat-lbl">Total minutes</div></div>`;
+}
+
+function resetApp() {
+  clearInterval(timerInterval); timerInterval = null; // BUG FIX: always clear on reset
+  document.getElementById('completeScreen').style.display = 'none';
+  document.getElementById('setupScreen').style.display    = 'flex';
+  startTime = null; isPaused = false; totalPausedMs = 0;
+  lastStageId = null; lastTimelineStageId = null;
+}
+
+
+// ─── STREAK ───────────────────────────────────────────────────────────────
+function getStreak() {
+  try {
+    const data = JSON.parse(localStorage.getItem('fastsync_streak') || '{}');
+    return { count: data.count || 0, lastDate: data.lastDate || null };
+  } catch { return { count: 0, lastDate: null }; }
+}
+
+function saveStreak(count, dateStr) {
+  try { localStorage.setItem('fastsync_streak', JSON.stringify({ count, lastDate: dateStr })); } catch {}
+}
+
+function recordFastComplete() {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const { count, lastDate } = getStreak();
+  let newCount;
+  if (!lastDate) {
+    newCount = 1;
+  } else {
+    const last = new Date(lastDate);
+    const now  = new Date(today);
+    const diffDays = Math.round((now - last) / 86400000);
+    if (diffDays === 1) newCount = count + 1;      // consecutive day
+    else if (diffDays === 0) newCount = count;      // already logged today
+    else newCount = 1;                              // streak broken
+  }
+  saveStreak(newCount, today);
+  updateStreakBadge(newCount);
+}
+
+function updateStreakBadge(count) {
+  const el = document.getElementById('streakBadge');
+  if (!el) return;
+  const emoji = count >= 30 ? '🏆' : count >= 14 ? '⚡' : count >= 7 ? '💪' : '🔥';
+  el.textContent = `${emoji} ${count} day${count === 1 ? '' : 's'}`;
+}
+
+// Init
+syncReadout();
+buildPreviewStages();
+updateStreakBadge(getStreak().count);
+</script>
+</body>
+</html>
