@@ -94,8 +94,8 @@
   .slabel{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;}
   .stage-item{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;display:flex;align-items:flex-start;gap:11px;transition:all 0.3s;}
   .stage-item.active{border-color:var(--accent);background:rgba(63,232,192,0.07);}
-  .stage-item.done{border-color:rgba(63,232,192,0.3);opacity:0.55;}
-  .stage-item.upcoming{opacity:0.38;}
+  .stage-item.done{border-color:rgba(63,232,192,0.3);opacity:0.65;}
+  .stage-item.upcoming{opacity:0.72;}
   .s-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px var(--accent);}
   .s-dot.done{background:rgba(63,232,192,0.4);box-shadow:none;}
   .s-dot.upcoming{background:var(--surface2);border:1px solid var(--border);box-shadow:none;}
@@ -372,7 +372,7 @@ function buildWheel(colEl, items, initIdx, onChange) {
 }
 
 const hourItems = ['1','2','3','4','5','6','7','8','9','10','11','12'];
-const minItems  = ['00','05','10','15','20','25','30','35','40','45','50','55'];
+const minItems  = Array.from({length:60}, (_,i) => String(i).padStart(2,'0'));
 const apItems   = ['AM','PM'];
 let selHr = 7, selMin = 0, selAP = 1;
 
