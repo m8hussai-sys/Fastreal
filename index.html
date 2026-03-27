@@ -673,21 +673,26 @@ function startFast(){
   if(s>now)s.setDate(s.getDate()-1);
   startTime=s.getTime(); totalPausedMs=0; isPaused=false;
   lastStageId=null; lastTimelineStageId=null;
+  saveFastState();
   document.getElementById('startedAt').textContent=fmt12(s);
   document.getElementById('endsAt').textContent=fmt12(new Date(startTime+fastDurationHours*3600000));
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('timerScreen').style.display='flex';
   setTimeout(buildRingMarkers,60);
-  tick(); timerInterval=setInterval(tick,1000);
+  tick();
+  timerInterval=setInterval(tick,1000);
+  // Save state every 30s so page reloads can restore it
+  setInterval(saveFastState, 30000);
 }
 
 function togglePause(){
   const btn=document.getElementById('pauseBtn'),sub=document.getElementById('ringSub');
   if(isPaused){totalPausedMs+=Date.now()-pausedAt;isPaused=false;btn.textContent='⏸ Pause';sub.textContent='REMAINING';sub.classList.remove('pulsing');}
   else{pausedAt=Date.now();isPaused=true;btn.textContent='▶ Resume';sub.textContent='PAUSED';sub.classList.add('pulsing');}
+  saveFastState();
 }
-function stopFast(){if(!confirm('End your fast early?'))return;clearInterval(timerInterval);timerInterval=null;showComplete(false);}
-function completeFast(){clearInterval(timerInterval);timerInterval=null;showComplete(true);}
+function stopFast(){if(!confirm('End your fast early?'))return;clearInterval(timerInterval);timerInterval=null;clearFastState();showComplete(false);}
+function completeFast(){clearInterval(timerInterval);timerInterval=null;clearFastState();showComplete(true);}
 
 function showComplete(full){
   const elapsed=(Date.now()-startTime-totalPausedMs)/3600000;
@@ -705,6 +710,7 @@ function showComplete(full){
 
 function resetApp(){
   clearInterval(timerInterval);timerInterval=null;
+  clearFastState();
   document.getElementById('completeScreen').style.display='none';
   document.getElementById('setupScreen').style.display='flex';
   startTime=null;isPaused=false;totalPausedMs=0;
@@ -728,6 +734,81 @@ function updateStreakBadge(count){
   el.textContent=`${e} ${count} day${count===1?'':'s'}`;
 }
 
+// ─── STATE PERSISTENCE ───────────────────────────────────────────────────
+function saveFastState(){
+  try{
+    localStorage.setItem('fastsync_state', JSON.stringify({
+      startTime,
+      fastDurationHours,
+      isPaused,
+      pausedAt: isPaused ? pausedAt : null,
+      totalPausedMs,
+      savedAt: Date.now()
+    }));
+  }catch(e){}
+}
+
+function clearFastState(){
+  try{ localStorage.removeItem('fastsync_state'); }catch(e){}
+}
+
+function restoreFastState(){
+  try{
+    const raw = localStorage.getItem('fastsync_state');
+    if(!raw) return false;
+    const state = JSON.parse(raw);
+    if(!state.startTime) return false;
+
+    // Sanity check: don't restore a fast that ended more than 24h ago
+    const expectedEnd = state.startTime + state.fastDurationHours * 3600000;
+    const now = Date.now();
+    if(now > expectedEnd + 86400000) { clearFastState(); return false; }
+
+    // Restore state
+    startTime = state.startTime;
+    fastDurationHours = state.fastDurationHours;
+    totalPausedMs = state.totalPausedMs || 0;
+
+    // If the app was paused when it was killed, account for the time since
+    // We treat the gap as paused time to be safe
+    if(state.isPaused && state.pausedAt){
+      // Was paused — keep it paused, add gap since savedAt as pause time
+      isPaused = true;
+      pausedAt = state.pausedAt;
+      // Add any time between savedAt and now as additional paused time
+      totalPausedMs += (now - state.savedAt);
+    } else {
+      isPaused = false;
+    }
+
+    // Restore preset button highlight
+    document.querySelectorAll('.preset-btn').forEach(b=>{
+      b.classList.toggle('active', b.getAttribute('onclick')==='selectPreset(this,'+fastDurationHours+')');
+    });
+    document.getElementById('durationDisplay').textContent = fastDurationHours + ' hours';
+    document.getElementById('protocolBadge').textContent = fastDurationHours + ':' + (24 - fastDurationHours);
+
+    // Show timer screen
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('timerScreen').style.display = 'flex';
+
+    const s = new Date(startTime);
+    document.getElementById('startedAt').textContent = fmt12(s);
+    document.getElementById('endsAt').textContent = fmt12(new Date(startTime + fastDurationHours * 3600000));
+
+    if(isPaused){
+      document.getElementById('pauseBtn').textContent = '▶ Resume';
+      document.getElementById('ringSub').textContent = 'PAUSED';
+      document.getElementById('ringSub').classList.add('pulsing');
+    }
+
+    setTimeout(buildRingMarkers, 60);
+    tick();
+    timerInterval = setInterval(tick, 1000);
+    return true;
+  }catch(e){ clearFastState(); return false; }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────
 try{
   const saved=localStorage.getItem('fastsync_preset');
@@ -742,6 +823,7 @@ try{
 }catch{}
 syncReadout();
 buildPreviewStages();
+}  // end if(!restoreFastState())
 updateStreakBadge(getStreak().count);
 </script>
 </body>
