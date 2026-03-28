@@ -616,50 +616,63 @@ function clearFastState(){
 }
 
 function restoreFastState(){
+  // Step 1: safely read from localStorage — never wipe on failure
+  var st=null;
   try{
     var raw=localStorage.getItem('fastsync_active');
     if(!raw) return false;
-    var st=JSON.parse(raw);
-    if(!st||!st.startTime) return false;
-    // Don't restore if the fast ended more than 24h ago
-    var expectedEnd=st.startTime+st.fastDurationHours*3600000;
-    if(Date.now()>expectedEnd+86400000){ clearFastState(); return false; }
+    st=JSON.parse(raw);
+  }catch(e){ return false; } // parse error — don't wipe, just skip
 
-    startTime=st.startTime;
-    fastDurationHours=st.fastDurationHours;
-    totalPausedMs=st.totalPausedMs||0;
+  if(!st||!st.startTime||!st.fastDurationHours) return false;
 
-    if(st.isPaused&&st.pausedAt){
-      // Was paused — add time since save as additional paused time
-      totalPausedMs+=(Date.now()-st.savedAt);
-      isPaused=true; pausedAt=Date.now();
-    } else {
-      isPaused=false;
-    }
+  // Step 2: sanity check — only discard if fast is more than 24h past goal
+  var expectedEnd=st.startTime+st.fastDurationHours*3600000;
+  if(Date.now()>expectedEnd+86400000){
+    clearFastState(); return false;
+  }
 
-    // Update UI
-    document.getElementById('durationDisplay').textContent=fastDurationHours+' hours';
-    document.getElementById('protocolBadge').textContent=Math.round(fastDurationHours)+':'+(24-Math.round(fastDurationHours));
+  // Step 3: restore state variables
+  startTime=st.startTime;
+  fastDurationHours=st.fastDurationHours;
+  totalPausedMs=st.totalPausedMs||0;
+
+  if(st.isPaused&&st.pausedAt){
+    // Was paused when app closed — treat gap as paused time
+    totalPausedMs+=(Date.now()-st.savedAt);
+    isPaused=true; pausedAt=Date.now();
+  } else {
+    isPaused=false;
+  }
+
+  // Step 4: update UI — each element wrapped individually so one failure cant kill the rest
+  try{ document.getElementById('durationDisplay').textContent=fastDurationHours+' hours'; }catch(e){}
+  try{ document.getElementById('protocolBadge').textContent=Math.round(fastDurationHours)+':'+(24-Math.round(fastDurationHours)); }catch(e){}
+  try{
     document.querySelectorAll('.preset-btn').forEach(function(b){
       b.classList.toggle('active',b.getAttribute('onclick')==='selectPreset(this,'+fastDurationHours+')');
     });
-    document.getElementById('startedAt').textContent=fmt12(new Date(startTime));
-    document.getElementById('endsAt').textContent=fmt12(new Date(startTime+fastDurationHours*3600000));
+  }catch(e){}
+  try{ document.getElementById('startedAt').textContent=fmt12(new Date(startTime)); }catch(e){}
+  try{ document.getElementById('endsAt').textContent=fmt12(new Date(startTime+fastDurationHours*3600000)); }catch(e){}
 
-    if(isPaused){
-      document.getElementById('pauseBtn').textContent='▶ Resume';
-      document.getElementById('ringSub').textContent='PAUSED';
-      document.getElementById('ringSub').classList.add('pulsing');
-    }
+  if(isPaused){
+    try{ document.getElementById('pauseBtn').textContent='▶ Resume'; }catch(e){}
+    try{ document.getElementById('ringSub').textContent='PAUSED'; }catch(e){}
+    try{ document.getElementById('ringSub').classList.add('pulsing'); }catch(e){}
+  }
 
+  try{
     document.getElementById('setupScreen').style.display='none';
     document.getElementById('timerScreen').style.display='flex';
-    setTimeout(buildRingMarkers,60);
-    tick();
-    timerInterval=setInterval(tick,1000);
-    saveInterval=setInterval(saveFastState,30000);
-    return true;
-  }catch(e){ clearFastState(); return false; }
+  }catch(e){}
+
+  setTimeout(buildRingMarkers,100);
+  tick();
+  timerInterval=setInterval(tick,1000);
+  // Save more frequently — every 10s instead of 30s
+  saveInterval=setInterval(saveFastState,10000);
+  return true;
 }
 
 // ─── FAST CONTROLS ────────────────────────────────────────────────────────
@@ -753,6 +766,17 @@ function updateStreakBadge(count){
   var e=count>=30?'🏆':count>=14?'⚡':count>=7?'💪':'🔥';
   el.textContent=e+' '+count+' day'+(count===1?'':'s');
 }
+
+// ─── VISIBILITY SAVE — fires when user locks phone or switches app
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='hidden' && startTime){
+    saveFastState();
+  }
+});
+// Also save on page unload
+window.addEventListener('pagehide', function(){
+  if(startTime) saveFastState();
+});
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 // Try to restore a running fast first
